@@ -1,78 +1,60 @@
-# Copilot instructions — NossoCRM (crmia-next)
+# Copilot Instructions - Levante CRM
 
-## Visão geral (arquitetura real)
-- **Next.js 16 (App Router)**: rotas e layouts em `app/` (ex.: `app/(protected)/*`, `app/api/*`).
-- UI/DOMínio: componentes compartilhados em `components/`, páginas/fluxos maiores em `features/`.
-- Estado/dados: contexts em `context/` (muitos são “fachadas” por cima de TanStack Query) e queries em `lib/query/`.
-- Backend principal: **Supabase** (browser SSR client + server SSR client + service role em casos específicos).
+## Visao Geral
+- Stack principal: Next.js 16 (App Router), React 19, TypeScript, Supabase, TanStack Query.
+- Estrutura de UI/domino: `components/` para compartilhado e `features/` para modulos de negocio.
+- Estado de dados: `context/` funciona como fachada sobre hooks e chaves em `lib/query/`.
 
-## Convenções importantes do projeto
-- **Proxy do Next 16+**: a autenticação/refresh/redirects rodam via `proxy.ts` (não `middleware.ts`).
-  - Veja `proxy.ts` + `lib/supabase/middleware.ts` (`updateSession`).
-  - O proxy **não intercepta `/api/*`** (Route Handlers devem responder 401/403; evitar redirect 307 quebrando `fetch`).
-- **Supabase client boundary**:
-  - Client: `lib/supabase/client.ts` pode retornar `null` quando `.env` não está configurado (log: `[supabase] Not configured`).
-  - Server: `lib/supabase/server.ts` usa `server-only` e `createServerClient` (envs com `!`).
-  - Service role (sem cookies): `createStaticAdminClient()` em `lib/supabase/server.ts` (usado por IA/ferramentas).
+## Arquitetura Critica
+- Auth/refresh roda em `proxy.ts` + `lib/supabase/middleware.ts` (nao usar `middleware.ts`).
+- O proxy nao intercepta `/api/*`; handlers devem responder 401/403 e evitar redirect para chamadas `fetch`.
+- Limites de client Supabase:
+  - browser: `lib/supabase/client.ts` (pode retornar `null` sem env configurada)
+  - server: `lib/supabase/server.ts` com `server-only`
+  - service role: `createStaticAdminClient()` em `lib/supabase/server.ts`
+- IA principal: chat em `app/api/ai/chat/route.ts`, UI em `components/ai/UIChat.tsx`, ferramentas em `lib/ai/tools.ts`.
 
-## Ambiente (env)
-- Use `.env.example` como base e copie para `.env.local`.
-- Obrigatórias no client/dev: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (ou `NEXT_PUBLIC_SUPABASE_ANON_KEY` legado).
-- Server-only: `SUPABASE_SECRET_KEY` (ou `SUPABASE_SERVICE_ROLE_KEY` legado) — nunca expor no client; usado por scripts e por `lib/ai/tools.ts`.
-- **Novo formato de chaves (Nov 2025)**: Supabase introduziu `sb_publishable_...` e `sb_secret_...`. O código usa fallback para compatibilidade:
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` → fallback → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-  - `SUPABASE_SECRET_KEY` → fallback → `SUPABASE_SERVICE_ROLE_KEY`
-
-## IA (padrão atual)
-- **Chat (AI SDK v6, streaming)**:
-  - UI: `components/ai/UIChat.tsx` usa `useChat()` e chama `POST /api/ai/chat`.
-  - API: `app/api/ai/chat/route.ts` aplica same-origin (`lib/security/sameOrigin.ts`), valida usuário, resolve `organizationId` via `profiles` e cria agente (`lib/ai/crmAgent.ts`).
-  - Chave/modelo: **org-wide** em `organization_settings` (fonte de verdade).
-    - Qualquer fallback para `user_settings` deve ser tratado como legado/compat e não como fluxo recomendado.
-  - Ferramentas: `lib/ai/tools.ts` usa service role e **sempre filtra por `organization_id`** do contexto.
-- **Tasks (AI SDK v6, output estruturado/JSON)**:
-  - API: `app/api/ai/tasks/**/route.ts`.
-  - Client: `lib/ai/tasksClient.ts`.
-- Rotas internas de teste (dev-only): `ALLOW_AI_TEST_ROUTE=true` (ver README).
-
-## Workflows do dia a dia
+## Comandos de Trabalho
 - Dev: `npm run dev`
 - Build: `npm run build`
-- Lint: `npm run lint`
+- Start: `npm run start`
+- Lint: `npm run lint` (zero warnings)
 - Typecheck: `npm run typecheck`
-- Testes: `npm run test:run` (Vitest). Config em `vitest.config.ts` roda **com DOM (happy-dom)** por padrão.
+- Testes: `npm run test` (watch), `npm run test:run` (single run)
+- Precheck: `npm run precheck` e `npm run precheck:fast`
 
-## Testes (particularidades)
-- Setup: `test/setup.ts` (carrega `.env/.env.local` + fallback monorepo; mock de `server-only`).
-- DOM setup: `test/setup.dom.ts` (matchers do jest-dom e polyfills básicos de `window/navigator`).
+## Convencoes de Codigo
+- Imports com alias `@/`.
+- Manter componentes compartilhados em `components/` e fluxo de negocio em `features/`.
+- Testes ao lado do codigo (`*.test.ts(x)`), com Vitest + React Testing Library.
+- Setup de testes em `test/setup.ts` e `test/setup.dom.ts`.
 
-## Como contribuir sem quebrar padrões
-- Ao mexer em auth/redirects: ajuste `proxy.ts` + `lib/supabase/middleware.ts` e **não** inclua `/api/*` no proxy.
-- Ao mexer na IA:
-  - mantenha o fluxo principal em `/api/ai/chat` + `lib/ai/*`.
-  - se tocar em queries com service role, garanta filtro por `organization_id` (exemplos em `lib/ai/tools.ts`).
+## Multi-Tenant e Seguranca
+- Toda query sensivel deve filtrar por `organization_id`.
+- Queries com service role devem aplicar filtro de tenant explicitamente.
+- Em IA, considerar `organization_settings` como fonte de verdade para modelo/chaves.
+- `lib/ai/tools.ts` deve sempre operar no escopo da organizacao.
 
-## Code Review - Diretrizes para GitHub Copilot
+## Cache e Realtime (Critico)
+- Um cache por entidade: mutations, realtime e optimistic updates devem usar a mesma chave-base.
+- Deals: usar sempre `[...queryKeys.deals.lists(), 'view']` para mutacoes.
+- Nunca usar `queryKeys.*.list({ filter })` em optimistic update de mutacao.
+- Preferir `setQueryData` sobre `invalidateQueries` quando for seguro para feedback imediato.
+- Realtime: debounce para UPDATE/DELETE; nao debouncer INSERT.
 
-Ao realizar revisão de código neste repositório:
+## Ambiente (Env)
+- Basear configuracao em `.env.example` e usar `.env.local`.
+- Chaves client: `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (fallback legado: `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
+- Chave server: `SUPABASE_SECRET_KEY` (fallback legado: `SUPABASE_SERVICE_ROLE_KEY`).
+- Nunca expor chave secreta no client.
 
-- **Responda em português** quando revisar código.
-- **Verifique padrões de código**:
-  - TypeScript strict mode deve ser respeitado
-  - Zero warnings no ESLint (configurado em `eslint.config.mjs`)
-  - Componentes devem seguir padrão: `components/` para compartilhados, `features/` para módulos específicos
-  - Imports devem usar alias `@/` (ex: `@/lib/utils`, `@/components/ui`)
-- **Verifique segurança multi-tenant**:
-  - Todas as queries devem filtrar por `organization_id`
-  - Service role queries devem sempre incluir filtro de tenant
-  - RLS policies devem estar configuradas corretamente
-- **Verifique performance**:
-  - Queries devem usar TanStack Query com `staleTime` apropriado
-  - Realtime deve usar debounce para UPDATE/DELETE (mas não para INSERT)
-  - Optimistic updates devem ser usados quando apropriado
-- **Verifique testes**:
-  - Novas features devem ter testes em `*.test.ts(x)` ao lado do código
-  - Testes devem usar Vitest + React Testing Library
-- **Verifique acessibilidade**:
-  - Componentes devem ter `aria-label` quando necessário
-  - Formulários devem ter tratamento de erros acessível
+## Documentacao (Linkar, nao duplicar)
+- Setup e produto: `README.md`
+- Public API: `docs/public-api.md`
+- Webhooks: `docs/webhooks.md`
+- MCP: `docs/mcp.md`
+
+## Regras de Review
+- Responder em portugues durante revisao de codigo.
+- Priorizar riscos de regressao, seguranca multi-tenant e cobertura de testes.
+- Validar lint/typecheck/testes para mudancas significativas antes de concluir.
