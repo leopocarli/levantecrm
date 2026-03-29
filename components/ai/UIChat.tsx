@@ -78,6 +78,25 @@ export function UIChat({
     const [isOpen, setIsOpen] = useState(!startMinimized);
     const [isExpanded, setIsExpanded] = useState(false);
 
+    // Chat session persistence key (stable per context)
+    const chatSessionKey = useMemo(() => {
+        const suffix = boardId || dealId || contactId || 'global';
+        return `levante_chat_${suffix}`;
+    }, [boardId, dealId, contactId]);
+
+    // Restore messages from sessionStorage on mount
+    const initialMessages = useMemo(() => {
+        if (typeof window === 'undefined') return undefined;
+        try {
+            const stored = sessionStorage.getItem(chatSessionKey);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch { /* ignore parse errors */ }
+        return undefined;
+    }, [chatSessionKey]);
+
     const cockpitDealTitle = useMemo(() => {
         const s: any = cockpitSnapshot as any;
         const title = s?.deal?.title;
@@ -156,6 +175,7 @@ export function UIChat({
 
     const { messages, sendMessage, status, error, addToolApprovalResponse } = useChat({
         transport,
+        ...(initialMessages ? { messages: initialMessages } : {}),
         // Re-submete automaticamente quando o usuário aprova/nega uma tool.
         // Sem isso, o clique só atualiza o estado local e a execução pode “parar”.
         sendAutomaticallyWhen: ({ messages }) => {
@@ -216,6 +236,22 @@ export function UIChat({
 
         return map;
     }, [messages]);
+
+    // Persist messages to sessionStorage for navigation-resilience
+    useEffect(() => {
+        if (messages.length === 0) return;
+        try {
+            // Keep only text parts to avoid serialization issues with tool-call state
+            const lightweight = messages.map(m => ({
+                id: m.id,
+                role: m.role,
+                parts: (m.parts as any[]).filter(p => p.type === 'text'),
+            })).filter(m => m.parts.length > 0);
+            if (lightweight.length > 0) {
+                sessionStorage.setItem(chatSessionKey, JSON.stringify(lightweight));
+            }
+        } catch { /* quota exceeded or serialization error — skip */ }
+    }, [messages, chatSessionKey]);
 
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -556,8 +592,8 @@ export function UIChat({
     const chatContent = (
         <>
             {/* Header */}
-            <div className="flex items-center gap-3 p-4 border-b border-slate-700/50">
-                <div className="p-2 bg-linear-to-br from-primary-500/20 to-violet-500/20 rounded-xl">
+            <div className="flex items-center gap-3 p-4 border-b border-white/10">
+                <div className="p-2 bg-linear-to-br from-primary-500/20 to-primary-400/10 rounded-xl">
                     <Sparkles className="w-5 h-5 text-primary-400" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -576,14 +612,14 @@ export function UIChat({
                     <div className="flex gap-1">
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className="p-1 hover:bg-slate-700/50 rounded-lg transition-colors"
+                            className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                             title={isExpanded ? 'Reduzir' : 'Expandir'}
                         >
                             <Maximize2 className="w-4 h-4 text-slate-400" />
                         </button>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="p-1 hover:bg-slate-700/50 rounded-lg transition-colors"
+                            className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                             title="Minimizar"
                         >
                             <Minimize2 className="w-4 h-4 text-slate-400" />
@@ -591,7 +627,7 @@ export function UIChat({
                         {onClose && (
                             <button
                                 onClick={onClose}
-                                className="p-1 hover:bg-slate-700/50 rounded-lg transition-colors"
+                                className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                                 title="Fechar"
                             >
                                 <X className="w-4 h-4 text-slate-400" />
@@ -622,7 +658,7 @@ export function UIChat({
                                         setInput(action.prompt);
                                         focusInput();
                                     }}
-                                    className="px-3 py-1.5 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-600/50 rounded-lg text-xs text-slate-300 transition-all"
+                                    className="px-3 py-1.5 bg-[#142236]/60 hover:bg-[#1e3350]/60 border border-white/10 rounded-lg text-xs text-slate-300 transition-all"
                                 >
                                     {action.label}
                                 </button>
@@ -700,7 +736,7 @@ export function UIChat({
                             )}
                             <div className={`max-w-[85%] ${message.role === 'user'
                                 ? 'bg-primary-600 text-white rounded-2xl rounded-tr-sm'
-                                : 'bg-slate-800/80 text-slate-200 rounded-2xl rounded-tl-sm border border-slate-700/50'
+                                : 'bg-[#142236]/80 text-slate-200 rounded-2xl rounded-tl-sm border border-white/10'
                                 } px-3 py-2`}>
 
                                 {groupedApprovals.length > 0 && (
@@ -1186,7 +1222,7 @@ export function UIChat({
 
                         {
                             message.role === 'user' && (
-                                <div className="shrink-0 w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center">
+                                <div className="shrink-0 w-7 h-7 rounded-full bg-[#142236] flex items-center justify-center">
                                     <User className="w-3.5 h-3.5 text-slate-300" />
                                 </div>
                             )
@@ -1200,7 +1236,7 @@ export function UIChat({
                         <div className="shrink-0 w-7 h-7 rounded-full bg-linear-to-br from-primary-500 to-violet-500 flex items-center justify-center">
                             <Bot className="w-3.5 h-3.5 text-white" />
                         </div>
-                        <div className="bg-slate-800/80 text-slate-400 rounded-2xl rounded-tl-sm px-3 py-2 border border-slate-700/50">
+                        <div className="bg-[#142236]/80 text-slate-400 rounded-2xl rounded-tl-sm px-3 py-2 border border-white/10">
                             <div className="flex items-center gap-2 text-sm">
                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                 <span>Pensando...</span>
@@ -1219,7 +1255,7 @@ export function UIChat({
             </div>
 
             {/* Input Area */}
-            < form onSubmit={handleSubmit} className="p-3 border-t border-slate-700/50" >
+            < form onSubmit={handleSubmit} className="p-3 border-t border-white/10" >
                 {hasPendingApprovals && (
                     <div className="mb-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-100">
                         Você tem {pendingApprovalIds.length} confirmação{pendingApprovalIds.length === 1 ? '' : 'ões'} pendente{pendingApprovalIds.length === 1 ? '' : 's'}. Aprove ou negue acima para continuar.
@@ -1234,12 +1270,12 @@ export function UIChat({
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Pergunte algo..."
                         disabled={!canSend}
-                        className="flex-1 px-3 py-2 bg-slate-800/60 border border-slate-700/50 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all disabled:opacity-50"
+                        className="flex-1 px-3 py-2 bg-[#142236]/60 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all disabled:opacity-50"
                     />
                     <button
                         type="submit"
                         disabled={!input.trim() || !canSend}
-                        className="px-3 py-2 bg-linear-to-r from-primary-600 to-violet-600 hover:from-primary-500 hover:to-violet-500 disabled:from-slate-600 disabled:to-slate-700 text-white rounded-xl transition-all disabled:opacity-50"
+                        className="px-3 py-2 bg-linear-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 disabled:from-slate-600 disabled:to-slate-700 text-white rounded-xl transition-all disabled:opacity-50"
                     >
                         {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </button>
@@ -1260,7 +1296,7 @@ export function UIChat({
                         onClick={() => setIsExpanded(false)}
                     />
                     {/* Drawer Panel */}
-                    <div className="fixed top-0 right-0 z-50 w-full max-w-lg h-full bg-slate-900 border-l border-slate-700/50 shadow-2xl shadow-black/50 flex flex-col transition-transform duration-300">
+                    <div className="fixed top-0 right-0 z-50 w-full max-w-lg h-full bg-[#0D1B2A] border-l border-white/10 shadow-2xl shadow-black/50 flex flex-col transition-transform duration-300">
                         {chatContent}
                     </div>
                 </>
@@ -1269,7 +1305,7 @@ export function UIChat({
 
         // Minimized: Small widget in corner
         return (
-            <div className="fixed bottom-6 right-6 z-50 w-96 h-125 bg-slate-900/95 rounded-2xl border border-slate-700/50 shadow-2xl shadow-black/50 flex flex-col overflow-hidden backdrop-blur-xl transition-all duration-300">
+            <div className="fixed bottom-6 right-6 z-50 w-96 h-125 bg-[#0D1B2A]/95 rounded-2xl border border-white/10 shadow-2xl shadow-black/50 flex flex-col overflow-hidden backdrop-blur-xl transition-all duration-300">
                 {chatContent}
             </div>
         );
@@ -1277,7 +1313,7 @@ export function UIChat({
 
     // Inline component
     return (
-        <div className="flex flex-col h-full bg-slate-900/50 rounded-2xl border border-slate-700/50 backdrop-blur-xl overflow-hidden">
+        <div className="flex flex-col h-full bg-[#0D1B2A]/50 rounded-2xl border border-white/10 backdrop-blur-xl overflow-hidden">
             {chatContent}
         </div>
     );

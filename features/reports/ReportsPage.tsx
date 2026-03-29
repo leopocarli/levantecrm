@@ -8,6 +8,7 @@ import { LazyRevenueTrendChart, ChartWrapper } from '@/components/charts';
 import { generateReportPDF } from './utils/generateReportPDF';
 import { useCRM } from '@/context/CRMContext';
 import { useAuth } from '@/context/AuthContext';
+import { formatCurrencyCompact } from '@/lib/utils';
 
 /**
  * Componente React `ReportsPage`.
@@ -91,9 +92,7 @@ const ReportsPage: React.FC = () => {
   const formatGoalValue = useCallback((value: number) => {
     switch (goalType) {
       case 'currency':
-        if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-        if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-        return `$${value.toLocaleString()}`;
+        return formatCurrencyCompact(value);
       case 'number':
         return value.toFixed(0);
       case 'percentage':
@@ -131,9 +130,7 @@ const ReportsPage: React.FC = () => {
 
   // Formatador de moeda
   const formatCurrency = useCallback((value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-    return `$${value.toLocaleString()}`;
+    return formatCurrencyCompact(value);
   }, []);
 
   const generatedBy = useMemo(() => {
@@ -189,7 +186,7 @@ const ReportsPage: React.FC = () => {
             value={selectedBoardId}
             onChange={(e) => setSelectedBoardId(e.target.value)}
             aria-label="Selecionar Pipeline"
-            className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {boards.map(board => (
               <option key={board.id} value={board.id}>{board.name}</option>
@@ -223,15 +220,15 @@ const ReportsPage: React.FC = () => {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <span className="text-xs text-slate-500">Realizado</span>
-                <p className="text-lg font-bold text-emerald-500">{formatGoalValue(currentValue)}</p>
+                <p className="text-lg font-bold font-mono text-emerald-500">{formatGoalValue(currentValue)}</p>
               </div>
               <div className="text-right">
                 <span className="text-xs text-slate-500">Meta</span>
-                <p className="text-lg font-bold text-slate-900 dark:text-white">{formatGoalValue(goalTarget)}</p>
+                <p className="text-lg font-bold font-mono text-slate-900 dark:text-white">{formatGoalValue(goalTarget)}</p>
               </div>
               <div className="text-right">
                 <span className="text-xs text-slate-500">Gap</span>
-                <p className={`text-lg font-bold ${forecastGap > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                <p className={`text-lg font-bold font-mono ${forecastGap > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
                   {forecastGap > 0 ? `-${formatGoalValue(forecastGap)}` : '✓ Atingido'}
                 </p>
               </div>
@@ -286,7 +283,7 @@ const ReportsPage: React.FC = () => {
             </div>
             <span className="text-xs text-slate-500">Pipeline Total</span>
           </div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(pipelineValue)}</p>
+          <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">{formatCurrency(pipelineValue)}</p>
           <p className={`text-xs ${changes.pipeline >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
             {changes.pipeline >= 0 ? '+' : ''}{changes.pipeline.toFixed(1)}% {COMPARISON_LABELS[period]}
           </p>
@@ -300,7 +297,7 @@ const ReportsPage: React.FC = () => {
             </div>
             <span className="text-xs text-slate-500">Win Rate</span>
           </div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{actualWinRate.toFixed(1)}%</p>
+          <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">{actualWinRate.toFixed(1)}%</p>
           <p className={`text-xs ${changes.winRate >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
             {changes.winRate >= 0 ? '+' : ''}{changes.winRate.toFixed(1)}% {COMPARISON_LABELS[period]}
           </p>
@@ -314,7 +311,7 @@ const ReportsPage: React.FC = () => {
             </div>
             <span className="text-xs text-slate-500">Ciclo Médio</span>
           </div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{avgSalesCycle} dias</p>
+          <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">{avgSalesCycle} dias</p>
           <p className="text-xs text-slate-500">
             Rápido: {fastestDeal}d | Lento: {slowestDeal}d
           </p>
@@ -328,7 +325,7 @@ const ReportsPage: React.FC = () => {
             </div>
             <span className="text-xs text-slate-500">Deals Fechados</span>
           </div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">
+          <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
             <span className="text-emerald-500">{wonDeals.length}</span>
             <span className="text-slate-400 mx-1">/</span>
             <span className="text-red-500">{lostDeals.length}</span>

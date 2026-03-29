@@ -8,26 +8,41 @@
 @theme {
   /* Font Families */
   --font-sans: 'Inter', var(--font-inter), sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-serif: 'Cinzel', serif;
+  --font-display: 'Space Grotesk', var(--font-display), sans-serif;
+  --font-mono: 'JetBrains Mono', var(--font-mono), monospace;
 
-  /* Primary Colors */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
+  /* Primary Colors — Laranja Levante #F5650A */
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #F5650A;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
 
-  /* Dark Theme Colors */
-  --color-dark-bg: #020617;
-  --color-dark-card: #0f172a;
-  --color-dark-border: #1e293b;
-  --color-dark-hover: #334155;
+  /* Dark Theme — Azul Meia-noite (Brandbook Levante) */
+  --color-dark-bg: #0D1B2A;
+  --color-dark-card: #142236;
+  --color-dark-border: #1e3350;
+  --color-dark-hover: #1e3a5f;
+
+  /* Semantic tokens for shadcn/ui components (Button, Badge, etc.) */
+  --color-primary: #F5650A;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #142236;
+  --color-secondary-foreground: #F8F8F8;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-accent: #FF9A5C;
+  --color-accent-foreground: #0D1B2A;
+  --color-ring: #F5650A;
+  --color-input: #e2e8f0;
+  --color-background: #f8fafc;
+  --color-foreground: #0D1B2A;
+  --color-muted-foreground: #64748b;
 }
 
 /* ========================================
@@ -114,12 +129,12 @@ html, body {
 }
 
 .dark {
-  /* Dark Mode - Deep Slate (OKLCH) */
-  --color-bg: oklch(11% 0.025 260);
-  --color-surface: oklch(15% 0.02 260);
-  --color-muted: oklch(22% 0.015 260);
-  --color-border: oklch(26% 0.012 260);
-  --color-border-subtle: oklch(22% 0.01 260 / 0.6);
+  /* Dark Mode — Azul Meia-noite Levante */
+  --color-bg: #0D1B2A;
+  --color-surface: #142236;
+  --color-muted: #1a2d45;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-subtle: rgba(255, 255, 255, 0.04);
 
   /* Status Colors - Dark Mode */
   --color-success: oklch(70% 0.17 145);
@@ -147,25 +162,35 @@ html, body {
   --color-orange-text: oklch(75% 0.17 55);
 
   /* Text Colors - Dark Mode */
-  --color-text-primary: oklch(98% 0.002 260);
-  --color-text-secondary: oklch(83% 0.015 260);
-  --color-text-muted: oklch(72% 0.02 260);
-  --color-text-subtle: oklch(62% 0.025 260);
+  --color-text-primary: #F8F8F8;
+  --color-text-secondary: rgba(248, 248, 248, 0.70);
+  --color-text-muted: rgba(248, 248, 248, 0.50);
+  --color-text-subtle: rgba(248, 248, 248, 0.40);
+
+  /* Semantic tokens — dark overrides */
+  --color-secondary: #1a2d45;
+  --color-secondary-foreground: #F8F8F8;
+  --color-accent: #FF9A5C;
+  --color-accent-foreground: #0D1B2A;
+  --color-input: #1e3350;
+  --color-background: #0D1B2A;
+  --color-foreground: #F8F8F8;
+  --color-muted-foreground: rgba(248, 248, 248, 0.50);
 
   /* Glass effect - Dark */
-  --glass-bg: oklch(15% 0.02 260 / 0.75);
-  --glass-border: oklch(100% 0 0 / 0.05);
+  --glass-bg: rgba(20, 34, 54, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
   --glass-blur: 12px;
 
   /* Dots background */
-  --dots-color: oklch(22% 0.012 260);
+  --dots-color: #1a2d45;
 
   /* Chart Colors */
-  --chart-text: #94a3b8;
-  --chart-grid: rgba(255, 255, 255, 0.1);
-  --chart-tooltip-bg: #1e293b;
-  --chart-tooltip-border: rgba(255, 255, 255, 0.1);
-  --chart-tooltip-text: #f8fafc;
+  --chart-text: rgba(248, 248, 248, 0.50);
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-tooltip-bg: #142236;
+  --chart-tooltip-border: rgba(255, 255, 255, 0.06);
+  --chart-tooltip-text: #F8F8F8;
 }
 
 /* ========================================
@@ -182,6 +207,10 @@ body {
  * ======================================== */
 @utility font-display {
   font-family: var(--font-display);
+}
+
+@utility font-mono {
+  font-family: var(--font-mono);
 }
 
 @utility bg-dots {
@@ -220,11 +249,11 @@ body {
 }
 
 .dark .scrollbar-custom::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #1e3350;
 }
 
 .dark .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #1e3a5f;
 }
 
 /* ========================================
@@ -255,23 +284,23 @@ body {
 }
 
 .focus-visible-ring:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #F5650A;
   outline-offset: 2px;
 }
 
 .dark .focus-visible-ring:focus-visible {
-  outline-color: #60a5fa;
+  outline-color: #fb923c;
 }
 
 .focus-visible-high:focus-visible {
-  outline: 3px solid #1d4ed8;
+  outline: 3px solid #ea580c;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 0 4px rgba(245, 101, 10, 0.3);
 }
 
 .dark .focus-visible-high:focus-visible {
-  outline-color: #93c5fd;
-  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.3);
+  outline-color: #fb923c;
+  box-shadow: 0 0 0 4px rgba(245, 101, 10, 0.25);
 }
 
 /* Skip link styling */
@@ -280,7 +309,7 @@ body {
   left: -9999px;
   z-index: 9999;
   padding: 0.75rem 1.5rem;
-  background-color: #1e40af;
+  background-color: #F5650A;
   color: #ffffff;
   font-weight: 600;
   text-decoration: none;
@@ -290,12 +319,12 @@ body {
 
 .skip-link:focus {
   left: 0;
-  outline: 3px solid #60a5fa;
+  outline: 3px solid #fb923c;
   outline-offset: 2px;
 }
 
 .dark .skip-link {
-  background-color: #3b82f6;
+  background-color: #ea580c;
 }
 
 /* Live region for screen reader announcements */

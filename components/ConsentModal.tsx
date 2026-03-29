@@ -64,7 +64,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
   onClose,
 }) => {
   const [selectedConsents, setSelectedConsents] = useState<Set<ConsentType>>(
-    new Set([...REQUIRED_CONSENTS, ...OPTIONAL_CONSENTS])
+    new Set<ConsentType>()
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -74,9 +74,6 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
   const optionalMissing = missingConsents.filter(c => OPTIONAL_CONSENTS.includes(c));
 
   const toggleConsent = (type: ConsentType) => {
-    // Can't toggle required consents
-    if (REQUIRED_CONSENTS.includes(type)) return;
-
     setSelectedConsents(prev => {
       const next = new Set(prev);
       if (next.has(type)) {
@@ -139,7 +136,7 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({
                     type={type}
                     checked={selectedConsents.has(type)}
                     required
-                    onChange={() => {}}
+                    onChange={() => toggleConsent(type)}
                   />
                 ))}
               </div>
@@ -237,8 +234,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
           type="checkbox"
           checked={checked}
           onChange={onChange}
-          disabled={required}
-          className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 disabled:opacity-75"
+          className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 cursor-pointer"
         />
       </div>
       <div className="flex-1">

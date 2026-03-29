@@ -30,8 +30,9 @@ import { InboxZeroState } from './InboxZeroState';
 const PT_BR_TIME_FORMATTER = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
 function normalizeTitleKey(value: string) {
-  // UX: normalize titles for robust matching (trim/collapse whitespace/remove quotes).
+  // UX: normalize titles for robust matching (trim/collapse whitespace/remove quotes/accents).
   return value
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase()
     .replace(/[“”"]/g, '')
@@ -200,8 +201,8 @@ export const InboxFocusView: React.FC<InboxFocusViewProps> = ({
     const primaryContactId = contactId || deal?.contactId || '';
     let contact = primaryContactId ? contactsById.get(primaryContactId) : undefined;
     if (!contact && extractedContactName) {
-      const needle = extractedContactName.toLowerCase();
-      contact = contacts.find(c => c.name?.toLowerCase().includes(needle));
+      const needle = extractedContactName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      contact = contacts.find(c => c.name?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(needle));
     }
 
     const dealActivities = deal ? (activitiesByDealIdSorted.get(deal.id) ?? []) : [];

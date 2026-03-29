@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useCRM } from '@/context/CRMContext';
 import { useAuth } from '@/context/AuthContext';
-import { Deal, Board, Contact, Company } from '@/types';
+import { useSettings } from '@/context/settings/SettingsContext';
+import { Deal, DealItem, Board, Contact, Company } from '@/types';
 import { X, Building2, User, Mail, Phone, AlertCircle, Loader2 } from 'lucide-react';
 import { DebugFillButton } from '@/components/debug/DebugFillButton';
 import { fakeDeal, fakeContact, fakeCompany } from '@/lib/debug';
 import { ContactSearchCombobox } from '@/components/ui/ContactSearchCombobox';
+import { DealItemsEditor } from '@/components/ui/DealItemsEditor';
+import { formatInputCurrency, parseCurrencyInput } from '@/lib/utils';
 
 interface CreateDealModalProps {
     isOpen: boolean;
@@ -28,6 +31,7 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
 }) => {
     const { addDeal, activeBoard: contextActiveBoard, activeBoardId: contextActiveBoardId } = useCRM();
     const { profile, user } = useAuth();
+    const { products } = useSettings();
 
     // Prioriza props sobre contexto (permite que o Kanban passe o board correto)
     const activeBoard = propActiveBoard || contextActiveBoard;
@@ -52,6 +56,9 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
         value: ''
     });
 
+    // Deal items (produtos/serviços)
+    const [dealItems, setDealItems] = useState<DealItem[]>([]);
+
     // Estado de UI
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -62,6 +69,7 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
         setIsCreatingNew(false);
         setNewContactData({ name: '', email: '', phone: '', companyName: '' });
         setDealData({ title: '', value: '' });
+        setDealItems([]);
         setError(null);
         setIsSubmitting(false);
     };
@@ -139,8 +147,10 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
                 contactId: selectedContact?.id || '',
                 boardId: activeBoardId || activeBoard.id,
                 ownerId: user?.id || '',
-                value: Number(dealData.value) || 0,
-                items: [],
+                value: dealItems.length > 0
+                    ? dealItems.reduce((sum, item) => sum + item.quantity * item.price, 0)
+                    : (parseCurrencyInput(dealData.value) || 0),
+                items: dealItems,
                 status: firstStage.id,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -380,14 +390,20 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
                             <div>
                                 <label className="block text-xs font-medium text-slate-500 mb-1">Valor Estimado (R$)</label>
                                 <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
                                     className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500"
-                                    placeholder="0.00"
+                                    placeholder="0,00"
                                     value={dealData.value}
-                                    onChange={e => setDealData(prev => ({ ...prev, value: e.target.value }))}
+                                    onChange={e => setDealData(prev => ({ ...prev, value: formatInputCurrency(e.target.value) }))}
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Produtos / Itens */}
+                    <div className="pt-3 border-t border-slate-100 dark:border-white/5">
+                        <DealItemsEditor items={dealItems} onChange={setDealItems} products={products} />
                     </div>
 
                     {/* Mensagem de erro */}

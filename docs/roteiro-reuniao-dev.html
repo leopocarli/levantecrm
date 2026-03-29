@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roteiro — Reunião com Desenvolvedora · Levante</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0D1B2A; --bg-card:#142236; --bg-3:#1A2D45; --bg-deep:#091422;
+  --orange:#F5650A; --orange-s:#FF9A5C; --orange-glow:rgba(245,101,10,.13); --orange-border:rgba(245,101,10,.28);
+  --white:#F8F8F8; --b70:rgba(248,248,248,.70); --b50:rgba(248,248,248,.50); --b30:rgba(248,248,248,.30); --b12:rgba(248,248,248,.12); --b07:rgba(248,248,248,.07); --b04:rgba(248,248,248,.04);
+  --border:rgba(255,255,255,.07); --border-mid:rgba(255,255,255,.12);
+  --green:#22C55E; --green-bg:rgba(34,197,94,.08); --green-border:rgba(34,197,94,.22);
+  --red:#F87171; --red-bg:rgba(248,113,113,.08); --red-border:rgba(248,113,113,.22);
+  --yellow:#FBBF24; --yellow-bg:rgba(251,191,36,.08);
+  --fd:'Space Grotesk',sans-serif; --fb:'Inter',sans-serif; --fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg-deep);scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--white);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ── PROGRESS BAR ── */
+#pbar{position:fixed;top:0;left:0;height:2px;background:var(--orange);z-index:999;transition:width .3s ease;box-shadow:0 0 10px var(--orange)}
+
+/* ── PAGE ── */
+.page{max-width:820px;margin:0 auto;padding:48px 32px 100px}
+
+/* ── HEADER ── */
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:48px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.header-left{display:flex;flex-direction:column;gap:16px}
+.logo svg{height:20px;width:auto}
+.header-title{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--white);line-height:1.15;letter-spacing:-.02em}
+.header-title span{color:var(--orange)}
+.header-meta{display:flex;gap:16px;flex-wrap:wrap}
+.hm{font-family:var(--fm);font-size:10.5px;color:var(--b50);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.hm b{color:var(--b70);font-weight:500}
+.total-pill{background:var(--orange-glow);border:1px solid var(--orange-border);border-radius:8px;padding:10px 18px;text-align:center;flex-shrink:0}
+.total-pill .t1{font-family:var(--fd);font-size:30px;font-weight:700;color:var(--orange);line-height:1}
+.total-pill .t2{font-family:var(--fm);font-size:9px;color:var(--b50);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;gap:6px;margin-bottom:44px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;align-items:center}
+.tl-label{font-family:var(--fm);font-size:9.5px;color:var(--b30);letter-spacing:.08em;text-transform:uppercase;margin-right:6px;white-space:nowrap}
+.tl-block{flex:1;height:32px;border-radius:6px;background:var(--b07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.tl-block:hover{border-color:var(--border-mid)}
+.tl-block.active{background:var(--orange-glow);border-color:var(--orange-border)}
+.tl-block.done{background:rgba(34,197,94,.06);border-color:var(--green-border)}
+.tl-block .tn{font-family:var(--fm);font-size:9px;color:var(--b30);letter-spacing:.04em}
+.tl-block .tt{font-family:var(--fd);font-size:11px;font-weight:600;color:var(--b50)}
+.tl-block.active .tn{color:var(--orange)}
+.tl-block.active .tt{color:var(--white)}
+.tl-block.done .tt{color:var(--green)}
+.tl-block.done .tn{color:var(--green)}
+.tl-sep{color:var(--b12);font-size:10px;flex-shrink:0}
+
+/* ── BLOCK ── */
+.block{display:flex;gap:24px;margin-bottom:16px;border-radius:14px;border:1px solid var(--border);background:var(--bg-card);overflow:hidden;transition:border-color .25s,opacity .3s}
+.block.done{opacity:.55}
+.block.active{border-color:var(--orange-border);box-shadow:0 0 0 1px var(--orange-border),0 8px 32px rgba(0,0,0,.3)}
+.block-aside{width:72px;flex-shrink:0;background:var(--b04);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0;gap:8px}
+.block-num{font-family:var(--fd);font-size:32px;font-weight:700;color:var(--b12);line-height:1;transition:color .25s}
+.block.active .block-num{color:var(--orange)}
+.block.done .block-num{color:var(--green)}
+.block-min{font-family:var(--fm);font-size:9px;color:var(--b30);letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.4}
+.block-min b{display:block;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--b50);margin-bottom:1px}
+.block-content{flex:1;padding:22px 24px 24px}
+.block-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;cursor:pointer;user-select:none}
+.block-title-wrap{display:flex;align-items:center;gap:10px}
+.block-tag{font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:100px;border:1px solid var(--border-mid);color:var(--b50)}
+.block-title{font-family:var(--fd);font-size:19px;font-weight:700;color:var(--white);line-height:1.2;letter-spacing:-.01em}
+.block-done-btn{font-family:var(--fm);font-size:10px;letter-spacing:.06em;padding:5px 12px;border-radius:100px;border:1px solid var(--border-mid);background:transparent;color:var(--b50);cursor:pointer;transition:all .2s;white-space:nowrap}
+.block-done-btn:hover{border-color:var(--green-border);color:var(--green);background:var(--green-bg)}
+.block.done .block-done-btn{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+
+/* ── FALA (script) ── */
+.fala{background:rgba(245,101,10,.06);border-left:3px solid var(--orange);border-radius:0 10px 10px 0;padding:12px 16px;margin:12px 0;font-size:14px;color:var(--b70);line-height:1.65;font-style:italic;position:relative}
+.fala::before{content:'FALE';font-family:var(--fm);font-style:normal;font-size:8.5px;letter-spacing:.12em;color:var(--orange);display:block;margin-bottom:5px;font-weight:500}
+.fala strong{color:var(--white);font-style:normal}
+
+/* ── MOSTRAR / NÃO MOSTRAR ── */
+.show-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.show-col{border-radius:10px;padding:14px;border:1px solid}
+.show-col.sim{background:var(--green-bg);border-color:var(--green-border)}
+.show-col.nao{background:var(--red-bg);border-color:var(--red-border)}
+.show-col-label{font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.show-col.sim .show-col-label{color:var(--green)}
+.show-col.nao .show-col-label{color:var(--red)}
+.show-item{font-size:13px;color:var(--b70);padding:4px 0;display:flex;align-items:flex-start;gap:7px;line-height:1.4;border-bottom:1px solid rgba(255,255,255,.05)}
+.show-item:last-child{border-bottom:none}
+.show-item::before{font-size:12px;flex-shrink:0;margin-top:1px}
+.show-col.sim .show-item::before{content:'✓';color:var(--green)}
+.show-col.nao .show-item::before{content:'✕';color:var(--red)}
+
+/* ── WOW BOX ── */
+.wow-box{background:var(--orange-glow);border:1px solid var(--orange-border);border-radius:10px;padding:14px 16px;margin:12px 0}
+.wow-label{font-family:var(--fm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);margin-bottom:6px}
+.wow-box p{font-size:13.5px;color:var(--b70);line-height:1.6;margin:0}
+.wow-box strong{color:var(--white)}
+
+/* ── STEPS ── */
+.steps{list-style:none;margin:10px 0;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--b70);line-height:1.5;align-items:flex-start}
+.steps li:last-child{border-bottom:none}
+.steps li::before{content:counter(s);font-family:var(--fd);font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-glow);border:1px solid var(--orange-border);width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.steps li strong{color:var(--white)}
+
+/* ── QUESTION CARDS ── */
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.q-card{background:var(--b07);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:default;transition:border-color .2s}
+.q-card:hover{border-color:var(--border-mid)}
+.q-card.star{background:var(--orange-glow);border-color:var(--orange-border)}
+.q-num{font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--b30);margin-bottom:8px}
+.q-card.star .q-num{color:var(--orange)}
+.q-text{font-family:var(--fd);font-size:15px;font-weight:600;color:var(--white);line-height:1.4;margin-bottom:10px;letter-spacing:-.01em}
+.q-why{font-size:11.5px;color:var(--b50);line-height:1.5;border-top:1px solid var(--border);padding-top:8px;margin-top:2px}
+.q-card.star .q-why{color:var(--b70)}
+.q-star-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--fm);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);margin-bottom:6px}
+
+/* ── RESULTADO CARDS ── */
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.result-card{border-radius:12px;padding:16px;border:1px solid}
+.result-card.ok{background:var(--green-bg);border-color:var(--green-border)}
+.result-card.nok{background:var(--red-bg);border-color:var(--red-border)}
+.result-label{font-family:var(--fm);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.result-card.ok .result-label{color:var(--green)}
+.result-card.nok .result-label{color:var(--red)}
+.result-text{font-size:13px;color:var(--b70);line-height:1.6}
+.result-text strong{color:var(--white)}
+.fala-sm{font-size:13px;color:var(--b70);line-height:1.65;font-style:italic;background:rgba(245,101,10,.06);border-left:2px solid var(--orange);padding:8px 12px;border-radius:0 7px 7px 0;margin-top:8px}
+
+/* ── BEFORE START ── */
+.before{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:32px}
+.before-title{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.before-title span{font-family:var(--fm);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--b30);padding:2px 7px;border:1px solid var(--border);border-radius:100px}
+.check-list{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.check-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13.5px;color:var(--b70);user-select:none}
+.check-item:hover{background:var(--b07)}
+.check-item.checked{color:var(--b30);text-decoration:line-through}
+.check-box{width:18px;height:18px;border-radius:5px;border:1px solid var(--border-mid);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:transparent}
+.check-item.checked .check-box{background:var(--green-bg);border-color:var(--green-border)}
+.check-item.checked .check-box::after{content:'✓';font-size:10px;color:var(--green)}
+
+/* ── DIVIDER ── */
+.div-line{height:1px;background:linear-gradient(90deg,var(--orange-border),transparent);margin:18px 0}
+
+/* ── TIP ── */
+.tip{background:var(--yellow-bg);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--b50);line-height:1.6;margin:10px 0;display:flex;gap:8px}
+.tip::before{content:'💡';flex-shrink:0}
+
+/* ── INLINE BADGE ── */
+.ib{font-family:var(--fm);font-size:10px;letter-spacing:.04em;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.ib-o{background:var(--orange-glow);color:var(--orange);border:1px solid var(--orange-border)}
+.ib-g{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.block{animation:fadeUp .5s ease both}
+.block:nth-child(1){animation-delay:.05s}
+.block:nth-child(2){animation-delay:.10s}
+.block:nth-child(3){animation-delay:.15s}
+.block:nth-child(4){animation-delay:.20s}
+.block:nth-child(5){animation-delay:.25s}
+
+@media(max-width:640px){
+  .page{padding:24px 16px 80px}
+  .show-grid,.q-grid,.result-grid,.check-list{grid-template-columns:1fr}
+  .header{flex-direction:column;gap:20px}
+  .block{flex-direction:column}
+  .block-aside{width:100%;flex-direction:row;justify-content:flex-start;padding:14px 18px;gap:12px;border-right:none;border-bottom:1px solid var(--border)}
+  .timeline{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<div id="pbar"></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg viewBox="0 0 200 26" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 25 L5 16 L10 16 L6 25 Z" fill="#F5650A" opacity=".38"/>
+          <path d="M13 25 L17 9 L22 9 L18 25 Z" fill="#F5650A" opacity=".68"/>
+          <path d="M25 25 L29 2 L34 2 L30 25 Z" fill="#F5650A"/>
+          <text x="40" y="21" font-family="'Space Grotesk','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="18" letter-spacing="3" fill="#F8F8F8">LEVANTE</text>
+        </svg>
+      </div>
+      <div class="header-title">Roteiro: Reunião<br>com a <span>Desenvolvedora</span></div>
+      <div class="header-meta">
+        <div class="hm">Data <b>30 Mar 2026</b></div>
+        <div class="hm">Objetivo <b>Apresentar o projeto + avaliar</b></div>
+        <div class="hm">Local <b>Videoconferência</b></div>
+      </div>
+    </div>
+    <div class="total-pill">
+      <div class="t1">~1h</div>
+      <div class="t2">Total</div>
+    </div>
+  </header>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <div class="tl-label">Blocos</div>
+    <div class="tl-block active" data-tl="1" onclick="goBlock(1)">
+      <div class="tn">5 min</div>
+      <div class="tt">Contexto</div>
+    </div>
+    <div class="tl-sep">›</div>
+    <div class="tl-block" data-tl="2" onclick="goBlock(2)">
+      <div class="tn">10 min</div>
+      <div class="tt">Demo CRM</div>
+    </div>
+    <div class="tl-sep">›</div>
+    <div class="tl-block" data-tl="3" onclick="goBlock(3)">
+      <div class="tn">15 min</div>
+      <div class="tt">A Spec</div>
+    </div>
+    <div class="tl-sep">›</div>
+    <div class="tl-block" data-tl="4" onclick="goBlock(4)">
+      <div class="tn">10 min</div>
+      <div class="tt">Conhecer ela</div>
+    </div>
+    <div class="tl-sep">›</div>
+    <div class="tl-block" data-tl="5" onclick="goBlock(5)">
+      <div class="tn">5 min</div>
+      <div class="tt">Fechar</div>
+    </div>
+  </div>
+
+  <!-- BLOCO 1 -->
+  <div class="block active" id="block-1">
+    <div class="block-aside">
+      <div class="block-num">1</div>
+      <div class="block-min"><b>5</b>min</div>
+    </div>
+    <div class="block-content">
+      <div class="block-header" onclick="toggleDone(1)">
+        <div class="block-title-wrap">
+          <div class="block-title">Contexto</div>
+          <div class="block-tag">Abertura</div>
+        </div>
+        <button class="block-done-btn" onclick="toggleDone(1);event.stopPropagation()">Marcar como feito</button>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--b50);margin-bottom:12px">Apresente quem você é, o que é a Levante e por que o projeto existe. Sem entrar em tecnologia ainda.</p>
+
+      <div class="fala">
+        "A Levante é uma operação de marketing especializada no setor automotivo. A gente cuida de tráfego pago, criativo e automação para empresas que vendem para revendas. <strong>Construímos nosso próprio CRM do zero</strong>, com IA integrada — ele é um produto que entregamos para os nossos clientes usarem no dia a dia comercial deles, e também usamos internamente. Ele já funciona bem — mas falta uma peça essencial: <strong>os usuários do CRM precisam conversar com os clientes deles pelo WhatsApp direto dentro do sistema</strong>, sem ficar trocando de tela. É isso que você vai construir."
+      </div>
+
+      <div class="tip">Não precisa falar de tecnologia aqui. Só contexto de negócio. Ela vai entender o "porquê" antes do "como".</div>
+    </div>
+  </div>
+
+  <!-- BLOCO 2 -->
+  <div class="block" id="block-2">
+    <div class="block-aside">
+      <div class="block-num">2</div>
+      <div class="block-min"><b>10</b>min</div>
+    </div>
+    <div class="block-content">
+      <div class="block-header" onclick="toggleDone(2)">
+        <div class="block-title-wrap">
+          <div class="block-title">Demo do CRM</div>
+          <div class="block-tag">Mostrar o sistema</div>
+        </div>
+        <button class="block-done-btn" onclick="toggleDone(2);event.stopPropagation()">Marcar como feito</button>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--b50);margin-bottom:14px">Objetivo: ela entender <em>onde</em> o WhatsApp vai se encaixar antes de ver a spec. Siga essa ordem.</p>
+
+      <ol class="steps">
+        <li><strong>Pipeline (Boards)</strong> — Abre a tela do quadro Kanban. Mostra os cards. Fale: <em>"Cada cartão é um cliente que a gente está trabalhando."</em></li>
+        <li><strong>Deal Cockpit</strong> — Clica em qualquer deal. Mostra as abas. Fale: <em>"Aqui dentro o vendedor trabalha o cliente. Vai surgir uma aba nova chamada 'Conversas' — essa é a peça principal que você vai construir."</em></li>
+        <li><strong>Botão de WhatsApp atual</strong> — Mostra o botão que já existe no cockpit (abre wa.me). Fale: <em>"Hoje clica aqui e abre o WhatsApp do celular. Queremos que a conversa apareça aqui dentro, sem sair do sistema."</em></li>
+        <li><strong>Configurações</strong> — Abre a tela de settings. Fale: <em>"Vai ter uma seção nova aqui para o cliente conectar o número de WhatsApp dele."</em></li>
+      </ol>
+
+      <div class="div-line"></div>
+
+      <div class="show-grid">
+        <div class="show-col sim">
+          <div class="show-col-label">✓ Mostrar isso</div>
+          <div class="show-item">Pipeline (Kanban com deals)</div>
+          <div class="show-item">Deal Cockpit e as abas</div>
+          <div class="show-item">Botão de WhatsApp atual</div>
+          <div class="show-item">Tela de Configurações</div>
+        </div>
+        <div class="show-col nao">
+          <div class="show-col-label">✕ Não mostrar agora</div>
+          <div class="show-item">Dashboard com gráficos e números</div>
+          <div class="show-item">Relatórios</div>
+          <div class="show-item">Assistente de IA</div>
+          <div class="show-item">Importação de contatos</div>
+          <div class="show-item">Qualquer tela de código</div>
+        </div>
+      </div>
+
+      <div class="wow-box">
+        <div class="wow-label">⭐ Momento WOW</div>
+        <p>Mostra o botão de WhatsApp que abre o wa.me e diz: <strong>"Isso aqui é o que existe hoje. O que você vai construir é transformar esse link numa conversa real dentro dessa tela."</strong> Esse é o momento em que ela entende o projeto de verdade.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO 3 -->
+  <div class="block" id="block-3">
+    <div class="block-aside">
+      <div class="block-num">3</div>
+      <div class="block-min"><b>15</b>min</div>
+    </div>
+    <div class="block-content">
+      <div class="block-header" onclick="toggleDone(3)">
+        <div class="block-title-wrap">
+          <div class="block-title">A Documentação</div>
+          <div class="block-tag">A spec do projeto</div>
+        </div>
+        <button class="block-done-btn" onclick="toggleDone(3);event.stopPropagation()">Marcar como feito</button>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--b50);margin-bottom:14px">Abre o HTML da spec. Não leia tudo com ela — só mostre o mapa. Ela vai ler sozinha depois.</p>
+
+      <ol class="steps">
+        <li>
+          <span>Abre na seção <strong>"Por onde começar"</strong> (já aparece destacada no menu). Fale: <em>"Aqui tem a ordem que você lê o código antes de começar a escrever qualquer coisa."</em></span>
+        </li>
+        <li>
+          <span>Vai para a seção <strong>"Implementação"</strong>. Mostra os 4 cards de fase. Fale: <em>"Dividimos em 4 fases. Cada fase entrega algo que o usuário já consegue usar. Você vai ler os detalhes com calma."</em> — Não precisa explicar o técnico de cada fase.</span>
+        </li>
+        <li>
+          <span>Mostra a seção <strong>"Alinhamento com o CRM"</strong>. Explica: <em>"Verde = já existe no código, você só usa. Amarelo = precisa de atenção. Vermelho = você vai criar do zero."</em></span>
+        </li>
+        <li>
+          <span>Mostra a seção <strong>"Padrões do Código"</strong>. Fale: <em>"Aqui tem exemplos reais do código do sistema pra você copiar o padrão. Não precisa inventar do zero."</em></span>
+        </li>
+      </ol>
+
+      <div class="fala">
+        "Essa documentação foi construída junto com uma análise do código real do sistema. Não é só teoria — tem código concreto pra você usar. Mas não precisa ler agora. Quero só que você veja o tamanho do projeto e me diga se faz sentido pra você."
+      </div>
+
+      <div class="tip">Se ela começar a fazer perguntas técnicas agora — ótimo sinal. Responda o que souber, e o que não souber fala: <em>"Isso tá explicado na documentação, mas posso te conectar com quem construiu o sistema se precisar."</em></div>
+    </div>
+  </div>
+
+  <!-- BLOCO 4 -->
+  <div class="block" id="block-4">
+    <div class="block-aside">
+      <div class="block-num">4</div>
+      <div class="block-min"><b>10</b>min</div>
+    </div>
+    <div class="block-content">
+      <div class="block-header" onclick="toggleDone(4)">
+        <div class="block-title-wrap">
+          <div class="block-title">Conhecer ela</div>
+          <div class="block-tag">As 4 perguntas</div>
+        </div>
+        <button class="block-done-btn" onclick="toggleDone(4);event.stopPropagation()">Marcar como feito</button>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--b50);margin-bottom:14px">Faça essas 4 perguntas e <strong>escuta mais do que fala</strong>. Não precisa entender a resposta técnica — presta atenção na confiança dela.</p>
+
+      <div class="q-grid">
+        <div class="q-card">
+          <div class="q-num">Pergunta 1</div>
+          <div class="q-text">"Você já usou TypeScript? Com que frequência?"</div>
+          <div class="q-why">TypeScript é a linguagem do sistema. Se ela usa com frequência, vai entrar mais fácil.</div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">Pergunta 2</div>
+          <div class="q-text">"Já integrou alguma API externa num sistema existente? Como foi?"</div>
+          <div class="q-why">O WhatsApp API é o núcleo do projeto. Se ela já fez algo parecido, é uma boa base.</div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">Pergunta 3</div>
+          <div class="q-text">"Já trabalhou com Supabase ou banco de dados com login e multi-usuário?"</div>
+          <div class="q-why">O CRM usa Supabase com isolamento por empresa. Não precisa ter feito igual — só parecido.</div>
+        </div>
+
+        <div class="q-card star">
+          <div class="q-star-badge">★ Mais importante</div>
+          <div class="q-text">"Quando você trava num problema que nunca viu antes, o que você faz?"</div>
+          <div class="q-why">Resposta esperada: <em>"Vou na documentação, pesquiso, peço ajuda quando trava de vez."</em> Se ela travar na própria pergunta — atenção.</div>
+        </div>
+      </div>
+
+      <div class="tip">Você não precisa avaliar a resposta técnica dela — você não é dev. Avalia a postura: ela fala com segurança? Ela dá exemplos reais? Ela demonstra curiosidade? Isso vale mais do que saber as respostas certas.</div>
+    </div>
+  </div>
+
+  <!-- BLOCO 5 -->
+  <div class="block" id="block-5">
+    <div class="block-aside">
+      <div class="block-num">5</div>
+      <div class="block-min"><b>5</b>min</div>
+    </div>
+    <div class="block-content">
+      <div class="block-header" onclick="toggleDone(5)">
+        <div class="block-title-wrap">
+          <div class="block-title">Fechar</div>
+          <div class="block-tag">Próximos passos</div>
+        </div>
+        <button class="block-done-btn" onclick="toggleDone(5);event.stopPropagation()">Marcar como feito</button>
+      </div>
+
+      <p style="font-size:13.5px;color:var(--b50);margin-bottom:14px">Dependendo de como foi o Bloco 4, siga um dos dois caminhos:</p>
+
+      <div class="result-grid">
+        <div class="result-card ok">
+          <div class="result-label">✓ A conversa foi bem</div>
+          <div class="result-text">Propõe só a <strong>Fase 1</strong> como teste. Deixa ela falar o prazo e o valor primeiro — nunca sugira número antes dela.</div>
+          <div class="fala-sm">"Antes de a gente fechar o projeto inteiro, queria começar pela Fase 1 — banco de dados e o sistema recebendo mensagem. Qual prazo você precisaria pra isso, e qual valor faria sentido pra você?"</div>
+        </div>
+        <div class="result-card nok">
+          <div class="result-label">✕ Ela hesitou muito</div>
+          <div class="result-text">Não fecha na hora. Dá um recuo respeitoso. Nada de pressão — você vai sair no prejuízo se contratar na dúvida.</div>
+          <div class="fala-sm">"Adorei conversar. Vou revisar umas coisas aqui e te retorno com os próximos passos, tudo bem?"</div>
+        </div>
+      </div>
+
+      <div class="div-line"></div>
+
+      <p style="font-size:13px;color:var(--b50);margin-bottom:8px">Se ela apresentou prazo e valor razoáveis, feche assim:</p>
+      <div class="fala">
+        "Então combinado: Fase 1 entregue até <strong>[data que ela falou]</strong>. Quando eu validar que tá funcionando, a gente acerta o pagamento e parte pra Fase 2. Vou te mandar a documentação no email hoje."
+      </div>
+
+      <div class="tip"><strong>Referência de prazo aceitável para a Fase 1:</strong> até 6 semanas. Se ela pedir mais, não é sinal ruim — é sinal de que ela entendeu a complexidade.</div>
+    </div>
+  </div>
+
+  <!-- ANTES DE COMEÇAR -->
+  <div class="before">
+    <div class="before-title">Antes de começar a reunião <span>Checklist</span></div>
+    <div class="check-list">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        CRM aberto no navegador, logado
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        HTML da spec aberto em outra aba
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        Este roteiro aberto no celular ou outra tela
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        Sabe qual é o prazo máximo que aceita (Fase 1: 6 semanas)
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        Decidiu que vai deixar ela falar o valor primeiro
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        Email dela anotado pra mandar a spec depois
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// Progress bar on scroll
+window.addEventListener('scroll', () => {
+  const d = document.documentElement
+  document.getElementById('pbar').style.width = (d.scrollTop / (d.scrollHeight - d.clientHeight) * 100) + '%'
+})
+
+// Toggle block done
+function toggleDone(n) {
+  const block = document.getElementById('block-' + n)
+  const btn = block.querySelector('.block-done-btn')
+  const isDone = block.classList.toggle('done')
+  block.classList.toggle('active', !isDone)
+  btn.textContent = isDone ? '↩ Desfazer' : 'Marcar como feito'
+  updateTimeline(n, isDone)
+  updateNextActive()
+}
+
+// Go to block from timeline
+function goBlock(n) {
+  const el = document.getElementById('block-' + n)
+  el.scrollIntoView({behavior:'smooth', block:'start'})
+  setActiveTimeline(n)
+}
+
+// Timeline state
+function updateTimeline(n, done) {
+  const tl = document.querySelector('[data-tl="' + n + '"]')
+  if (tl) {
+    tl.classList.toggle('done', done)
+    tl.classList.toggle('active', !done)
+  }
+}
+
+function setActiveTimeline(n) {
+  document.querySelectorAll('.tl-block').forEach((t, i) => {
+    t.classList.remove('active')
+    if (i + 1 === n) t.classList.add('active')
+  })
+}
+
+function updateNextActive() {
+  const blocks = document.querySelectorAll('.block')
+  let foundActive = false
+  blocks.forEach(b => {
+    if (!b.classList.contains('done') && !foundActive) {
+      b.classList.add('active')
+      foundActive = true
+    } else if (b.classList.contains('active') && b.classList.contains('done')) {
+      b.classList.remove('active')
+    }
+  })
+}
+
+// Checklist
+function toggleCheck(el) {
+  el.classList.toggle('checked')
+}
+
+// Intersection observer for timeline highlight
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const n = e.target.id.replace('block-','')
+      setActiveTimeline(parseInt(n))
+    }
+  })
+}, { rootMargin: '-20% 0px -50% 0px', threshold: 0.1 })
+
+document.querySelectorAll('.block[id]').forEach(b => observer.observe(b))
+</script>
+</body>
+</html>

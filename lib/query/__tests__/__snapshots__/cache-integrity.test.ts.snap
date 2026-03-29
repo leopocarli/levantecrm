@@ -26,6 +26,7 @@ exports[`Cache Integrity - Snapshot > deve gerar um snapshot das query keys usad
   "useRealtimeSync.ts": [
     "DEALS_VIEW_KEY",
     "DEALS_VIEW_KEY",
+    "DEALS_VIEW_KEY",
   ],
 }
 `;

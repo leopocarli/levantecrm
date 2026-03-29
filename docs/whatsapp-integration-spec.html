@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Integration Spec — Levante CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0D1B2A;--bg-2:#0A1520;--bg-3:#142236;--bg-card:#0F1D30;
+    --border:#1A3050;--border-bright:#254870;
+    --green:#25D366;--green-dim:#1a9448;--green-glow:rgba(37,211,102,.12);--green-text:#25D366;
+    --orange:#F5650A;--orange-dim:#C44D08;--orange-glow:rgba(245,101,10,.12);--orange-text:#FF9A5C;
+    --text:#D4E0EC;--text-dim:#6B8BAF;--text-muted:#3D5A78;
+    --yellow:#F5C542;--red:#F05A5A;--blue:#5AB4F0;--purple:#A78BFA;
+    --font-display:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;
+    --sidebar-width:268px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.7;overflow-x:hidden}
+
+  /* SIDEBAR */
+  .sidebar{width:var(--sidebar-width);min-height:100vh;position:fixed;top:0;left:0;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+  .sidebar-logo{padding:22px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px}
+  .logo-icon{width:33px;height:33px;background:var(--orange);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .logo-icon svg{width:18px;height:18px;fill:#000}
+  .logo-text{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--text);line-height:1.2}
+  .logo-text span{display:block;font-weight:400;color:var(--text-dim);font-size:10.5px}
+  .nav-label{padding:16px 16px 4px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);font-family:var(--font-display)}
+  .sidebar nav{padding:3px 9px 12px}
+  .nav-item{display:block;padding:6px 10px;border-radius:6px;text-decoration:none;color:var(--text-dim);font-size:12px;line-height:1.35;transition:all .15s;border-left:2px solid transparent;margin-bottom:1px}
+  .nav-item:hover{background:var(--orange-glow);color:var(--text);border-left-color:var(--orange-dim)}
+  .nav-item.active{background:var(--orange-glow);color:var(--orange-text);border-left-color:var(--orange)}
+  .num{font-size:9.5px;color:var(--text-muted);margin-right:5px;font-family:var(--font-mono)}
+
+  /* MAIN */
+  .main{margin-left:var(--sidebar-width);max-width:940px;padding:52px 60px 120px}
+
+  /* HERO */
+  .hero{margin-bottom:56px;animation:fadeUp .6s ease both}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--orange-glow);border:1px solid var(--border-bright);border-radius:100px;padding:4px 14px;font-size:11px;color:var(--orange-text);font-family:var(--font-mono);margin-bottom:20px;letter-spacing:.04em}
+  .hero-badge::before{content:'';width:6px;height:6px;background:var(--orange);border-radius:50%;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+  .hero h1{font-family:var(--font-display);font-size:44px;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:#fff;margin-bottom:14px}
+  .hero h1 em{font-style:normal;color:var(--orange)}
+  .hero-sub{font-size:16px;color:var(--text-dim);max-width:580px;line-height:1.6;font-weight:300;margin-bottom:24px}
+  .hero-meta{display:flex;gap:20px;flex-wrap:wrap}
+  .meta-pill{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text-dim);font-family:var(--font-mono)}
+  .meta-pill .lbl{color:var(--text-muted);text-transform:uppercase;font-size:9.5px;letter-spacing:.08em}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  /* TYPOGRAPHY */
+  .divider{height:1px;background:linear-gradient(90deg,var(--border-bright),transparent);margin:48px 0}
+  section{margin-bottom:64px}
+  .sec-label{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:10.5px;color:var(--orange-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+  .sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+  h2{font-family:var(--font-display);font-size:26px;font-weight:700;color:#fff;margin-bottom:16px;letter-spacing:-.01em;line-height:1.2}
+  h3{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--text);margin:30px 0 10px;letter-spacing:-.01em}
+  h4{font-size:13px;font-weight:500;color:var(--orange-text);margin:20px 0 7px;font-family:var(--font-mono);letter-spacing:.04em}
+  p{margin-bottom:14px;color:var(--text)}
+  a{color:var(--orange-text);text-decoration:none;border-bottom:1px solid var(--orange-dim);transition:all .15s}
+  a:hover{color:var(--orange);border-color:var(--orange)}
+  strong{color:#fff;font-weight:500}
+  ul.plain{margin:10px 0 18px 22px;color:var(--text-dim);font-size:14px;line-height:2.1}
+
+  /* CALLOUT */
+  .callout{border-left:3px solid var(--orange);background:var(--orange-glow);border-radius:0 8px 8px 0;padding:13px 17px;margin:18px 0;font-size:13.5px}
+  .callout.warn{border-color:var(--yellow);background:rgba(245,197,66,.07)}
+  .callout.danger{border-color:var(--red);background:rgba(240,90,90,.07)}
+  .callout.info{border-color:var(--blue);background:rgba(90,180,240,.07)}
+  .callout.info .ct{color:var(--blue)}
+  .ct{font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);margin-bottom:5px}
+  .callout.warn .ct{color:var(--yellow)}
+  .callout.danger .ct{color:var(--red)}
+
+  /* DEV NOTE */
+  .dev-note{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);border-radius:8px;padding:11px 15px;margin:12px 0;font-size:13px;color:var(--text-dim);display:block;line-height:1.7}
+  .dev-note::before{content:'🔍 ';font-size:13px}
+  .dev-note strong{color:#C4B5FD}
+
+  /* CODE */
+  pre{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:17px 20px;overflow-x:auto;margin:12px 0 20px;position:relative}
+  pre::before{content:attr(data-lang);position:absolute;top:10px;right:13px;font-family:var(--font-mono);font-size:9.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+  code{font-family:var(--font-mono);font-size:12.5px;line-height:1.65;color:var(--orange-text)}
+  p code,li code,td code{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:12px;color:var(--orange-text)}
+
+  /* FLOW */
+  .flow{background:var(--bg-card);border:1px solid var(--border);border-radius:11px;padding:22px;margin:16px 0 26px;font-size:13px;line-height:1.7;overflow-x:auto}
+  .flow-title{font-family:var(--font-display);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:13px;display:flex;align-items:center;gap:7px}
+  .flow-title::before{content:'';width:7px;height:7px;border-radius:2px;background:var(--orange)}
+  .flow-step{display:flex;align-items:flex-start;gap:11px;padding:5px 0;border-left:1px dashed var(--border-bright);margin-left:9px;padding-left:17px;position:relative;font-size:13.5px}
+  .flow-step::before{content:'';position:absolute;left:-5px;top:13px;width:8px;height:8px;border-radius:50%;background:var(--orange-dim);border:2px solid var(--bg-card)}
+  .flow-step:last-child{border-left-color:transparent}
+  .flow-step:last-child::before{background:var(--orange);box-shadow:0 0 8px var(--orange)}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;margin:13px 0 24px;border-radius:10px;border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead tr{background:var(--bg-3)}
+  thead th{padding:11px 14px;text-align:left;font-family:var(--font-mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--bg-3)}
+  td{padding:10px 14px;color:var(--text);vertical-align:top}
+  td:first-child{font-family:var(--font-mono);font-size:11.5px;color:var(--orange-text);white-space:nowrap;font-weight:500}
+
+  /* BADGE */
+  .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:500;font-family:var(--font-mono);letter-spacing:.03em;white-space:nowrap}
+  .bg{background:rgba(37,211,102,.12);color:#25D366;border:1px solid rgba(37,211,102,.2)}
+  .by{background:rgba(245,197,66,.12);color:var(--yellow);border:1px solid rgba(245,197,66,.2)}
+  .br{background:rgba(240,90,90,.12);color:var(--red);border:1px solid rgba(240,90,90,.2)}
+  .bb{background:rgba(90,180,240,.12);color:var(--blue);border:1px solid rgba(90,180,240,.2)}
+  .bp{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+  .bd{background:rgba(122,158,131,.08);color:var(--text-dim);border:1px solid var(--border)}
+
+  /* CHECKLIST */
+  .checklist{list-style:none;margin:13px 0 20px}
+  .checklist li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;font-size:14px;border-bottom:1px solid var(--border)}
+  .checklist li:last-child{border-bottom:none}
+  .checklist li::before{content:'✓';color:var(--orange);font-weight:700;font-family:var(--font-mono);font-size:12px;margin-top:3px;flex-shrink:0}
+
+  /* STEPS */
+  .steps{counter-reset:step;list-style:none;margin:13px 0 20px}
+  .steps li{counter-increment:step;display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--border)}
+  .steps li:last-child{border-bottom:none}
+  .steps li::before{content:counter(step);width:25px;height:25px;background:var(--bg-3);border:1px solid var(--border-bright);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--orange-text);font-weight:500;flex-shrink:0;margin-top:2px}
+
+  /* CARDS */
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px;margin:16px 0 26px}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:17px;transition:border-color .2s,transform .2s}
+  .card:hover{border-color:var(--border-bright);transform:translateY(-2px)}
+  .card-title{font-family:var(--font-display);font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .card-rec{border-color:var(--orange-dim)}
+  .card-rec .card-title::after{content:'Recomendado';font-size:10px;font-family:var(--font-mono);background:var(--orange-glow);color:var(--orange);padding:2px 6px;border-radius:100px;border:1px solid rgba(245,101,10,.2);font-weight:400}
+  .card p{font-size:12.5px;color:var(--text-dim);margin-bottom:10px}
+  .card-props{display:flex;flex-direction:column;gap:3px}
+  .card-prop{display:flex;justify-content:space-between;font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--border)}
+  .card-prop:last-child{border-bottom:none}
+  .pk{color:var(--text-muted);font-family:var(--font-mono);font-size:10.5px}
+  .pv{color:var(--text);text-align:right}
+
+  /* FASE OVERVIEW */
+  .fases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:20px 0 28px}
+  .fase-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .fase-card-top{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
+  .fase-num{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .fase-nome{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.25}
+  .fase-datas{font-family:var(--font-mono);font-size:11px;color:var(--orange);background:rgba(245,101,10,.08);border:1px solid rgba(245,101,10,.2);padding:3px 8px;border-radius:4px;display:inline-block}
+  .fase-card-mid{padding:12px 16px;flex:1}
+  .fase-entrega-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .fase-entrega-item{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--text-dim);padding:4px 0;line-height:1.4}
+  .fase-entrega-item::before{content:'✓';color:var(--orange);font-size:11px;flex-shrink:0;margin-top:1px}
+  .fase-card-bot{padding:10px 16px;background:var(--bg-3);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .fase-sprints{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted)}
+  .fase-valor{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--orange)}
+  .fase-aviso{font-size:11px;color:var(--yellow);margin-top:4px}
+
+  /* SPRINT */
+  .sprint{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+  .sprint-hd{padding:12px 17px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .sprint-hd-l{display:flex;align-items:center;gap:10px}
+  .sprint-num{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);padding:2px 6px;border-radius:4px}
+  .sprint-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text)}
+  .sprint-body{padding:13px 17px}
+  .sprint-task{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:13px;color:var(--text-dim);border-bottom:1px solid var(--border)}
+  .sprint-task:last-child{border-bottom:none}
+  .sprint-task::before{content:'';width:14px;height:14px;border-radius:4px;border:1px solid var(--border-bright);flex-shrink:0;background:var(--orange-glow) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath fill='none' stroke='%2325D366' stroke-width='1.5' d='M2.5 7l3 3 6-6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain}
+
+  /* API ROUTE */
+  .api-route{display:flex;align-items:center;gap:9px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:8px 13px;margin:4px 0;font-family:var(--font-mono);font-size:12.5px;transition:border-color .15s}
+  .api-route:hover{border-color:var(--border-bright)}
+  .method{font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.04em;flex-shrink:0}
+  .GET{background:rgba(90,180,240,.12);color:var(--blue)}
+  .POST{background:rgba(245,101,10,.12);color:var(--orange)}
+  .PATCH{background:rgba(245,197,66,.12);color:var(--yellow)}
+  .DELETE{background:rgba(240,90,90,.12);color:var(--red)}
+  .rp{color:var(--text);flex:1}
+  .rd{color:var(--text-dim);font-size:11px}
+
+  /* TIER */
+  .tier-table{display:flex;gap:2px;margin:11px 0 18px;flex-wrap:wrap}
+  .tier-cell{flex:1;min-width:90px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px;text-align:center}
+  .tier-name{font-family:var(--font-mono);font-size:9.5px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+  .tier-val{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--orange-text)}
+  .tier-sub{font-size:10.5px;color:var(--text-dim);margin-top:2px}
+
+  /* START BOX */
+  .start-box{background:var(--bg-card);border:1px solid var(--border-bright);border-radius:12px;padding:26px;margin-bottom:52px}
+  .start-box-title{font-family:var(--font-display);font-size:17px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .start-box-title::before{content:'';width:8px;height:8px;background:var(--orange);border-radius:2px;flex-shrink:0}
+  .file-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+  .file-list li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--bg-3);border:1px solid var(--border);border-radius:7px;font-size:13px}
+  .file-list li .order{font-family:var(--font-mono);font-size:10px;color:var(--orange);background:var(--orange-glow);padding:1px 6px;border-radius:3px;flex-shrink:0;margin-top:1px;font-weight:600}
+  .file-list li .path{color:var(--orange-text);font-family:var(--font-mono);font-size:12px;flex-shrink:0}
+  .file-list li .why{color:var(--text-dim)}
+
+  /* CHECK GRID */
+  .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .check-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:8px 11px;border-radius:7px;border:1px solid var(--border)}
+  .check-item.ok{background:rgba(37,211,102,.05)}
+  .check-item.warn{background:rgba(245,197,66,.05);border-color:rgba(245,197,66,.2)}
+  .check-item.err{background:rgba(240,90,90,.05);border-color:rgba(240,90,90,.15)}
+  .check-icon{font-size:12px;flex-shrink:0;margin-top:2px}
+  .check-text{color:var(--text-dim);line-height:1.4}
+  .check-text strong{color:var(--text);font-weight:500}
+
+  /* PROGRESS */
+  .progress-bar{position:fixed;top:0;left:0;height:2px;background:var(--orange);z-index:999;transition:width .1s;box-shadow:0 0 8px var(--orange)}
+
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border-bright);border-radius:3px}
+
+  @media(max-width:900px){
+    .sidebar{display:none}
+    .main{margin-left:0;padding:32px 20px 80px}
+    .hero h1{font-size:30px}
+    .cards-grid,.check-grid{grid-template-columns:1fr}
+    .tier-table{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo" style="flex-direction:column;align-items:flex-start;gap:8px;padding:18px 16px 14px">
+    <svg viewBox="0 0 200 26" xmlns="http://www.w3.org/2000/svg" style="height:18px;width:auto">
+      <path d="M1 25 L5 16 L10 16 L6 25 Z" fill="#F5650A" opacity=".38"/>
+      <path d="M13 25 L17 9 L22 9 L18 25 Z" fill="#F5650A" opacity=".68"/>
+      <path d="M25 25 L29 2 L34 2 L30 25 Z" fill="#F5650A"/>
+      <text x="40" y="21" font-family="'Space Grotesk','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="18" letter-spacing="3" fill="#F8F8F8">LEVANTE</text>
+    </svg>
+    <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase">WhatsApp Integration · v2.0</div>
+  </div>
+  <div class="nav-label">Developer</div>
+  <nav>
+    <a class="nav-item active" href="#comecar">🚀 Por onde começar</a>
+    <a class="nav-item" href="#codebase">🔍 Alinhamento com o CRM</a>
+    <a class="nav-item" href="#padroes">⚙️ Padrões do Código</a>
+  </nav>
+  <div class="nav-label">Especificação</div>
+  <nav>
+    <a class="nav-item" href="#visao-geral"><span class="num">01</span>Visão Geral</a>
+    <a class="nav-item" href="#provedores"><span class="num">02</span>Provedores (BSP)</a>
+    <a class="nav-item" href="#prerequisitos"><span class="num">03</span>Pré-requisitos</a>
+    <a class="nav-item" href="#arquitetura"><span class="num">04</span>Arquitetura Técnica</a>
+    <a class="nav-item" href="#banco"><span class="num">05</span>Banco de Dados</a>
+    <a class="nav-item" href="#api"><span class="num">06</span>API Routes</a>
+    <a class="nav-item" href="#ui"><span class="num">07</span>Interface do Usuário</a>
+    <a class="nav-item" href="#coexistencia"><span class="num">08</span>Coexistência</a>
+    <a class="nav-item" href="#realtime"><span class="num">09</span>Realtime & Cache</a>
+    <a class="nav-item" href="#seguranca"><span class="num">10</span>Segurança</a>
+    <a class="nav-item" href="#dificuldades"><span class="num">11</span>Dificuldades</a>
+    <a class="nav-item" href="#implementacao"><span class="num">12</span>Implementação</a>
+    <a class="nav-item" href="#testes"><span class="num">13</span>Testes</a>
+    <a class="nav-item" href="#links"><span class="num">14</span>Links de Referência</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Especificação para desenvolvimento · Março 2026</div>
+  <h1>Integração <em>WhatsApp</em><br>no Levante CRM</h1>
+  <p class="hero-sub">Documentação técnica completa — onboarding via Embedded Signup, mensagens em tempo real, templates, broadcast e coexistência com celular. Inclui padrões reais do código do CRM.</p>
+  <div class="hero-meta">
+    <div class="meta-pill"><span class="lbl">Versão</span>2.0</div>
+    <div class="meta-pill"><span class="lbl">Autor</span>Leonardo Pocarli</div>
+    <div class="meta-pill"><span class="lbl">Stack</span>Next.js 16.0.10 · React 19.2.1 · Supabase</div>
+    <div class="meta-pill"><span class="lbl">Status</span><span class="badge by">Em desenvolvimento</span></div>
+  </div>
+</div>
+
+<!-- POR ONDE COMEÇAR -->
+<div class="start-box" id="comecar">
+  <div class="start-box-title">Por onde começar — leia nessa ordem</div>
+  <ul class="file-list">
+    <li><span class="order">1º</span><span class="path">.github/copilot-instructions.md</span><span class="why">— Regras do projeto: auth, multi-tenant, cache, padrões de código. Leia antes de escrever qualquer linha.</span></li>
+    <li><span class="order">2º</span><span class="path">types/types.ts</span><span class="why">— Tipos de Contact, Deal, Activity. Entenda a estrutura de dados existente.</span></li>
+    <li><span class="order">3º</span><span class="path">supabase/migrations/20251201000000_schema_init.sql</span><span class="why">— Schema atual do banco. Entenda as tabelas que já existem antes de criar as novas.</span></li>
+    <li><span class="order">4º</span><span class="path">lib/supabase/server.ts</span><span class="why">— Como criar o client Supabase em rotas de API. Tem o <code>createStaticAdminClient()</code> para service role.</span></li>
+    <li><span class="order">5º</span><span class="path">lib/query/index.tsx + queryKeys.ts</span><span class="why">— Padrão de query keys. Entenda o <code>DEALS_VIEW_KEY</code> antes de criar chaves de WhatsApp.</span></li>
+    <li><span class="order">6º</span><span class="path">lib/realtime/useRealtimeSync.ts</span><span class="why">— Hook de realtime com dedup. Você vai estender esse arquivo.</span></li>
+    <li><span class="order">7º</span><span class="path">features/deals/cockpit/DealCockpitClient.tsx</span><span class="why">— Cockpit onde vai entrar a tab de conversas. Entenda a estrutura de tabs existente.</span></li>
+    <li><span class="order">8º</span><span class="path">features/inbox/components/MessageComposerModal.tsx</span><span class="why">— Composer atual que abre <code>wa.me/</code>. Você vai evoluir para enviar via API.</span></li>
+    <li><span class="order">9º</span><span class="path">app/api/settings/ai-features/route.ts</span><span class="why">— Exemplo real de route autenticada. Copie esse padrão para suas rotas de WhatsApp.</span></li>
+  </ul>
+  <p style="font-size:13px;color:var(--text-dim);margin:0">Depois de ler, rode <code>npm run dev</code> e navegue pelo CRM — especialmente deals/cockpit e inbox — antes de começar a codar.</p>
+</div>
+
+<!-- ALINHAMENTO COM O CRM -->
+<div style="margin-bottom:52px" id="codebase">
+  <div class="sec-label">Análise do Código</div>
+  <h2>Alinhamento com o CRM existente</h2>
+  <p style="color:var(--text-dim);font-size:14px;margin-bottom:20px">O que já existe, o que precisa ser criado e o que precisa de atenção. Baseado na leitura do código real em <code>/levantecrm</code>.</p>
+  <div class="check-grid">
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>Stack confirmada</strong> — Next.js 16.0.10, React 19.2.1, TanStack Query v5.90, Vercel AI SDK v6.0.72. Tudo exatamente como a spec descreve.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>lib/phone.ts existe</strong> — <code>normalizePhoneE164()</code> e <code>toWhatsAppPhone()</code> implementadas com <code>libphonenumber-js 1.12</code>. Pronto para usar.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>DealCockpitClient.tsx existe</strong> — Tabs confirmadas: Chat | Notas | Scripts | Arquivos. Adicionar <code>'conversas'</code> é uma linha.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>MessageComposerModal existe</strong> — Já tem canal WHATSAPP, já usa <code>lib/phone.ts</code>. Hoje abre <code>wa.me/</code>. Evolução é cirúrgica.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>useRealtimeSync.ts existe</strong> — Dedup por <code>table-id-updatedAt</code> com TTL 5s, debounce 100ms. Pronto para estender com <code>conversations</code> e <code>messages</code>.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>audit_logs + user_consents existem</strong> — Tabelas de LGPD já no schema. Operações WhatsApp devem ser logadas em <code>audit_logs</code>.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>createStaticAdminClient() existe</strong> — Em <code>lib/supabase/server.ts</code>. Use no webhook handler para buscar a org pelo phone number com service role.</div></div>
+    <div class="check-item ok"><span class="check-icon">✅</span><div class="check-text"><strong>framer-motion 12 disponível</strong> — Já instalado. Use para animações da UI de chat (entrada de mensagens, transições de tab).</div></div>
+    <div class="check-item warn"><span class="check-icon">⚠️</span><div class="check-text"><strong>activities.type precisa de 'WHATSAPP'</strong> — Enum atual: CALL|MEETING|EMAIL|TASK|NOTE|STATUS_CHANGE. A migration deve adicionar WHATSAPP.</div></div>
+    <div class="check-item warn"><span class="check-icon">⚠️</span><div class="check-text"><strong>ai_feature_flags já existe</strong> — Use <code>key = 'whatsapp_integration'</code> para toggle da feature por org. Não criar nova lógica.</div></div>
+    <div class="check-item warn"><span class="check-icon">⚠️</span><div class="check-text"><strong>quick_scripts ≠ whatsapp_templates</strong> — São tabelas diferentes. Quick scripts são rascunhos do vendedor; whatsapp_templates são aprovados pela Meta. Não misturar.</div></div>
+    <div class="check-item warn"><span class="check-icon">⚠️</span><div class="check-text"><strong>Não criar WhatsApp Context</strong> — O padrão do CRM é TanStack Query hooks, não context. O <code>CRMContext</code> existe só por compatibilidade. Criar <code>lib/query/whatsapp.ts</code> com hooks.</div></div>
+    <div class="check-item err"><span class="check-icon">❌</span><div class="check-text"><strong>Nenhuma tabela WhatsApp existe</strong> — conversations, messages, whatsapp_channels, etc. são todas novas. A migration é a fundação de tudo.</div></div>
+    <div class="check-item err"><span class="check-icon">❌</span><div class="check-text"><strong>Proxy não intercepta /api/*</strong> — Confirmado no copilot-instructions. Rotas <code>app/api/</code> retornam 401/403 diretamente, sem redirect. Aplicar no webhook.</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PADRÕES DO CÓDIGO -->
+<section id="padroes">
+  <div class="sec-label">Padrões do Código</div>
+  <h2>Padrões reais do CRM — copie esses padrões</h2>
+  <p style="color:var(--text-dim)">Extraídos diretamente do código existente. Suas implementações devem seguir exatamente esses padrões.</p>
+
+  <h3>Autenticação e organization_id em API Routes</h3>
+  <p style="color:var(--text-dim);font-size:14px">Padrão universal de todas as rotas autenticadas. Copie para suas rotas de WhatsApp.</p>
+  <pre data-lang="typescript"><code>// app/api/whatsapp/channels/route.ts — padrão de todas as rotas
+import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
+
+function json&lt;T&gt;(body: T, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  })
+}
+
+export async function GET() {
+  const supabase = await createClient()
+
+  // 1. Autenticar
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return json({ error: 'Unauthorized' }, 401)
+
+  // 2. Pegar organization_id do perfil
+  const { data: me } = await supabase
+    .from('profiles')
+    .select('id, role, organization_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!me?.organization_id) return json({ error: 'Profile not found' }, 404)
+
+  // 3. Sempre filtrar por organization_id
+  const { data, error } = await supabase
+    .from('whatsapp_channels')
+    .select('*')
+    .eq('organization_id', me.organization_id)
+
+  if (error) return json({ error: error.message }, 500)
+  return json({ data })
+}</code></pre>
+
+  <h3>Service Role no Webhook (busca cross-tenant)</h3>
+  <p style="color:var(--text-dim);font-size:14px">O webhook precisa identificar a org pelo phone number. Use <code>createStaticAdminClient()</code> — mas SEMPRE filtre por org manualmente.</p>
+  <pre data-lang="typescript"><code>// app/api/whatsapp/webhook/route.ts
+import { createStaticAdminClient } from '@/lib/supabase/server'
+
+async function processWebhookPayload(body: unknown) {
+  const sb = createStaticAdminClient() // service role — bypassa RLS
+
+  // Identificar org pelo phone — filtrar explicitamente
+  const { data: channel } = await sb
+    .from('whatsapp_channels')
+    .select('id, organization_id')
+    .eq('display_phone_number', destinationPhone) // phone do nosso canal
+    .eq('status', 'CONNECTED')
+    .single()
+
+  if (!channel) return // número não pertence a nenhuma org
+
+  // A partir daqui, SEMPRE usar channel.organization_id em tudo
+  const orgId = channel.organization_id
+  // ...
+}</code></pre>
+
+  <h3>Validação com Zod (padrão do projeto)</h3>
+  <pre data-lang="typescript"><code>import { z } from 'zod'
+
+const SendMessageSchema = z.object({
+  content: z.string().min(1).max(4096),
+  type: z.enum(['TEXT', 'TEMPLATE', 'IMAGE', 'DOCUMENT']),
+  templateName: z.string().optional(),
+  templateVariables: z.record(z.string()).optional(),
+}).strict()
+
+// No handler:
+const body = await req.json().catch(() => null)
+const parsed = SendMessageSchema.safeParse(body)
+if (!parsed.success) return json({ error: 'Invalid payload', details: parsed.error.flatten() }, 400)</code></pre>
+
+  <h3>Estender useRealtimeSync com novas tabelas</h3>
+  <pre data-lang="typescript"><code>// lib/realtime/useRealtimeSync.ts — adicionar as novas tabelas
+
+// 1. Adicionar ao tipo
+type RealtimeTable =
+  | 'deals' | 'contacts' | 'activities'
+  | 'boards' | 'board_stages' | 'crm_companies'
+  | 'conversations'   // NOVO
+  | 'messages'        // NOVO
+
+// 2. Adicionar ao mapeamento de query keys
+const getTableQueryKeys = (table: RealtimeTable) => {
+  const mapping = {
+    deals: [queryKeys.deals.all, queryKeys.dashboard.stats],
+    contacts: [queryKeys.contacts.all],
+    activities: [queryKeys.activities.all],
+    // ...
+    conversations: [whatsappKeys.conversations.all], // NOVO
+    messages: [whatsappKeys.messages.all],            // NOVO
+  }
+  return mapping[table]
+}
+
+// 3. Usar no componente
+useRealtimeSync(['conversations', 'messages'])</code></pre>
+
+  <h3>Query Keys — padrão do projeto</h3>
+  <pre data-lang="typescript"><code>// lib/query/whatsapp.ts — criar esse arquivo novo
+
+export const whatsappKeys = {
+  channels: {
+    all: ['whatsapp', 'channels'] as const,
+    list: () => [...whatsappKeys.channels.all, 'list'] as const,
+  },
+  conversations: {
+    all: ['whatsapp', 'conversations'] as const,
+    list: (filters?: object) => [...whatsappKeys.conversations.all, 'list', filters] as const,
+    detail: (id: string) => [...whatsappKeys.conversations.all, 'detail', id] as const,
+  },
+  messages: {
+    all: ['whatsapp', 'messages'] as const,
+    list: (conversationId: string) => [...whatsappKeys.messages.all, 'list', conversationId] as const,
+  },
+  templates: {
+    all: ['whatsapp', 'templates'] as const,
+    list: (channelId?: string) => [...whatsappKeys.templates.all, 'list', channelId] as const,
+  },
+  broadcasts: {
+    all: ['whatsapp', 'broadcasts'] as const,
+    detail: (id: string) => [...whatsappKeys.broadcasts.all, 'detail', id] as const,
+  },
+}
+
+// IMPORTANTE: Para invalidar queries do cockpit de deal,
+// use o padrão existente do projeto:
+// import { DEALS_VIEW_KEY } from '@/lib/query'
+// queryClient.invalidateQueries({ queryKey: DEALS_VIEW_KEY })</code></pre>
+
+  <h3>Optimistic Update ao enviar mensagem</h3>
+  <pre data-lang="typescript"><code>// Padrão: setQueryData para feedback instantâneo
+// Regra do copilot-instructions: preferir setQueryData sobre invalidateQueries
+
+const sendMessage = useMutation({
+  mutationFn: async (payload: SendMessagePayload) => {
+    const res = await fetch(`/api/whatsapp/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    return res.json()
+  },
+  onMutate: async (payload) => {
+    // Cancelar refetch em andamento
+    await queryClient.cancelQueries({ queryKey: whatsappKeys.messages.list(conversationId) })
+
+    // Inserir mensagem otimista no cache
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`,
+      content: payload.content,
+      direction: 'OUTBOUND',
+      delivery_status: 'PENDING',
+      created_at: new Date().toISOString(),
+    }
+    queryClient.setQueryData(
+      whatsappKeys.messages.list(conversationId),
+      (old: Message[] = []) => [...old, optimisticMessage]
+    )
+    return { optimisticMessage }
+  },
+  onError: (_err, _vars, context) => {
+    // Rollback em caso de erro
+    queryClient.setQueryData(
+      whatsappKeys.messages.list(conversationId),
+      (old: Message[] = []) => old.filter(m => m.id !== context?.optimisticMessage.id)
+    )
+    addToast('Erro ao enviar mensagem', 'error')
+  },
+  onSuccess: (data, _vars, context) => {
+    // Substituir temp pela mensagem real
+    queryClient.setQueryData(
+      whatsappKeys.messages.list(conversationId),
+      (old: Message[] = []) => old.map(m => m.id === context?.optimisticMessage.id ? data : m)
+    )
+  },
+})</code></pre>
+
+  <h3>Toast notifications</h3>
+  <pre data-lang="typescript"><code>import { useToast } from '@/context/ToastContext'
+
+function MyComponent() {
+  const { addToast } = useToast()
+
+  const handleSend = async () => {
+    try {
+      await sendMessage()
+      addToast('Mensagem enviada', 'success')
+    } catch {
+      addToast('Erro ao enviar', 'error')
+    }
+  }
+}
+// Tipos: 'success' | 'error' | 'info' | 'warning'</code></pre>
+
+  <h3>Pegar organization_id nos componentes client</h3>
+  <pre data-lang="typescript"><code>import { useAuth } from '@/context/AuthContext'
+
+function WhatsAppComponent() {
+  const { user, profile, organizationId } = useAuth()
+  // organizationId é o campo que você precisa para qualquer query
+  // profile.role: 'admin' | 'vendedor'
+}</code></pre>
+
+  <h3>Validação de assinatura do Webhook</h3>
+  <pre data-lang="typescript"><code>import { createHmac } from 'crypto'
+import twilio from 'twilio'
+
+// Twilio
+function validateTwilioSignature(req: Request, rawBody: string): boolean {
+  return twilio.validateRequest(
+    process.env.TWILIO_AUTH_TOKEN!,
+    req.headers.get('X-Twilio-Signature') ?? '',
+    process.env.NEXT_PUBLIC_APP_URL + '/api/whatsapp/webhook',
+    JSON.parse(rawBody)
+  )
+}
+
+// Meta Cloud API Direta
+function validateMetaSignature(req: Request, rawBody: string): boolean {
+  const signature = req.headers.get('x-hub-signature-256') ?? ''
+  const expected = 'sha256=' + createHmac('sha256', process.env.META_APP_SECRET!)
+    .update(rawBody).digest('hex')
+  return signature === expected
+}</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- 1. VISÃO GERAL -->
+<section id="visao-geral">
+  <div class="sec-label">01</div>
+  <h2>Visão Geral</h2>
+  <p>Integrar o WhatsApp oficial dentro do Levante CRM para que os clientes gerenciem toda a comunicação sem sair da plataforma.</p>
+  <ul class="checklist">
+    <li>Enviar e receber mensagens WhatsApp diretamente pelo CRM</li>
+    <li>Gerenciar templates de mensagem (marketing, utilidade) com aprovação da Meta</li>
+    <li>Enviar mensagens em massa (broadcast) para listas de contatos</li>
+    <li>Ver histórico completo de conversas no cockpit do deal</li>
+    <li>Continuar usando WhatsApp no celular normalmente (coexistência simultânea)</li>
+  </ul>
+  <h3>Princípio: zero fricção para o cliente</h3>
+  <div class="flow">
+    <div class="flow-title">Fluxo de onboarding do cliente</div>
+    <div class="flow-step">Clicar em <strong>"Conectar WhatsApp"</strong> nas configurações do CRM</div>
+    <div class="flow-step">Autorizar via <strong>popup do Facebook</strong> (Embedded Signup)</div>
+    <div class="flow-step"><strong>Pronto</strong> — já pode usar imediatamente</div>
+  </div>
+  <div class="callout danger">
+    <div class="ct">⛔ Sem APIs não-oficiais</div>
+    Z-API, Evolution API e similares são instáveis, arriscam banimento e <strong>não suportam coexistência real</strong>. Apenas BSPs com Cloud API oficial da Meta.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 2. PROVEDORES -->
+<section id="provedores">
+  <div class="sec-label">02</div>
+  <h2>Opções de Provedor (BSP)</h2>
+  <p>Requisitos obrigatórios para qualquer BSP considerado:</p>
+  <ul class="checklist">
+    <li>API oficial da Meta (Cloud API) — coexistência nativa</li>
+    <li>Embedded Signup com programa ISV/Tech Provider</li>
+    <li>SDK ou API REST documentada com suporte a Node.js</li>
+    <li>Webhooks para mensagens recebidas e status de entrega</li>
+    <li>Suporte a templates com aprovação Meta</li>
+  </ul>
+  <div class="cards-grid">
+    <div class="card card-rec">
+      <div class="card-title">Twilio</div>
+      <p>SDK Node.js oficial, webhooks em formato limpo, programa ISV bem documentado.</p>
+      <div class="card-props">
+        <div class="card-prop"><span class="pk">Custo extra</span><span class="pv">~USD 0.005/msg</span></div>
+        <div class="card-prop"><span class="pk">SDK Node.js</span><span class="pv">Oficial (TypeScript)</span></div>
+        <div class="card-prop"><span class="pk">Setup ISV</span><span class="pv">3–4 semanas</span></div>
+        <div class="card-prop"><span class="pk">Coexistência</span><span class="pv"><span class="badge bg">✓ Nativa</span></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Meta Cloud API Direta</div>
+      <p>Sem custo de intermediário, controle total. Mais complexo de implementar.</p>
+      <div class="card-props">
+        <div class="card-prop"><span class="pk">Custo extra</span><span class="pv">Nenhum (só taxa Meta)</span></div>
+        <div class="card-prop"><span class="pk">SDK Node.js</span><span class="pv"><span class="badge by">Nenhum oficial</span></span></div>
+        <div class="card-prop"><span class="pk">Complexidade</span><span class="pv"><span class="badge br">Alta</span></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">360dialog</div>
+      <p>BSP focado em WhatsApp, API compatível com Cloud API. Empresa menor.</p>
+      <div class="card-props">
+        <div class="card-prop"><span class="pk">Custo extra</span><span class="pv">~EUR 0.002-0.005/msg</span></div>
+        <div class="card-prop"><span class="pk">Documentação</span><span class="pv"><span class="badge by">Menos robusta</span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="ct">Liberdade de escolha</div>
+    Se encontrar opção melhor, tem <strong>liberdade total para propor</strong>. A camada de abstração (seção 4.3) permite trocar de BSP sem reescrever a aplicação.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 3. PRÉ-REQUISITOS -->
+<section id="prerequisitos">
+  <div class="sec-label">03</div>
+  <h2>Pré-requisitos</h2>
+  <h3>3.1 O que Leonardo precisa fazer antes do dev começar</h3>
+  <ol class="steps">
+    <li><div><strong>Criar conta no BSP escolhido</strong><br><span style="color:var(--text-dim);font-size:13px">Se Twilio: conta criada + upgrade para paga + anotar Account SID e Auth Token.</span></div></li>
+    <li><div><strong>Registro como Tech Provider / ISV</strong><br><span style="color:var(--text-dim);font-size:13px">Criar Meta App (uma vez, pelo Levante CRM). Submeter para App Review com permissões <code>whatsapp_business_management</code> e <code>whatsapp_business_messaging</code>.</span></div></li>
+    <li><div><strong>Meta Business Manager do Levante CRM</strong><br><span style="color:var(--text-dim);font-size:13px">Portfólio Empresarial verificado + verificação de negócio (CNPJ, site).</span></div></li>
+  </ol>
+  <div class="callout warn">
+    <div class="ct">⚠ Aprovação leva 3–4 semanas — iniciar imediatamente</div>
+    Sprints 1 e 2 usam sandbox do BSP e não dependem da aprovação. Sprint 3 (Embedded Signup real) só pode ser testado com aprovação concluída. Processos devem correr em paralelo.
+  </div>
+  <h3>3.2 Variáveis de ambiente</h3>
+  <pre data-lang="env"><code># .env.local — server-side. NUNCA expor no client.
+
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Se Meta direta:
+META_APP_ID=xxxxxxxxxxxx
+META_APP_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=um-token-secreto-aleatorio
+NEXT_PUBLIC_APP_URL=https://app.levantecrm.com</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- 4. ARQUITETURA -->
+<section id="arquitetura">
+  <div class="sec-label">04</div>
+  <h2>Arquitetura Técnica</h2>
+
+  <h3>4.1 Stack existente (confirmada no código)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tecnologia</th><th>Versão</th><th>Observação</th></tr></thead>
+      <tbody>
+        <tr><td>Next.js</td><td>16.0.10</td><td>App Router. Páginas em <code>app/</code>, features em <code>features/</code></td></tr>
+        <tr><td>React</td><td>19.2.1</td><td></td></tr>
+        <tr><td>Supabase</td><td>2.87.1</td><td>PostgreSQL + Auth + Realtime + Storage. RLS obrigatório em tudo.</td></tr>
+        <tr><td>TanStack Query</td><td>5.90.12</td><td>Padrão de cache do projeto. <strong>Não usar Context para dados remotos.</strong></td></tr>
+        <tr><td>Tailwind CSS</td><td>v4</td><td>+ Radix UI + framer-motion 12.23</td></tr>
+        <tr><td>Vercel AI SDK</td><td>6.0.72</td><td>Multi-provider (Claude/GPT/Gemini)</td></tr>
+        <tr><td>Zod</td><td>4.1.13</td><td>Validação de schemas. Usar em todos os inputs de API.</td></tr>
+        <tr><td>libphonenumber-js</td><td>1.12.33</td><td>Já instalado. Usar via <code>lib/phone.ts</code> — não importar direto.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.2 Fluxos da integração</h3>
+  <div class="flow">
+    <div class="flow-title">Onboarding — Conectar Canal</div>
+    <div class="flow-step">Cliente clica <strong>"Conectar WhatsApp"</strong> nas configurações</div>
+    <div class="flow-step">Popup <strong>Embedded Signup da Meta</strong> abre — cliente autoriza</div>
+    <div class="flow-step">Callback retorna <code>WABA ID</code> + <code>Phone Number</code></div>
+    <div class="flow-step">Frontend envia para <code>POST /api/whatsapp/channels</code></div>
+    <div class="flow-step">API registra sender no BSP + configura webhook apontando para <code>/api/whatsapp/webhook</code></div>
+    <div class="flow-step">Canal <strong>CONNECTED ✅</strong> — ativar flag <code>whatsapp_integration</code> em <code>ai_feature_flags</code></div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-title">Mensagem Recebida — processamento assíncrono obrigatório</div>
+    <div class="flow-step">Cliente WhatsApp → Meta → BSP → <code>POST /api/whatsapp/webhook</code></div>
+    <div class="flow-step">Validar assinatura → retornar <strong>200 imediatamente</strong> (&lt;100ms)</div>
+    <div class="flow-step">Processar em background: identificar org (<code>createStaticAdminClient</code>) → UPSERT conversation</div>
+    <div class="flow-step">Auto-linkar contact por phone normalizado → criar se não encontrar</div>
+    <div class="flow-step">Inserir message (INBOUND) → <strong>se mídia: baixar + salvar no Supabase Storage</strong></div>
+    <div class="flow-step">Supabase Realtime notifica UI → TanStack Query invalida cache</div>
+  </div>
+
+  <div class="callout danger">
+    <div class="ct">🔴 Webhook DEVE responder 200 antes de qualquer processamento</div>
+    Download de mídia pode levar vários segundos. Se não responder em 5s, o BSP retenta e cria mensagens duplicadas. Responda 200 primeiro, processe em background (<code>ctx.waitUntil()</code> no Vercel Edge ou Promise sem await).
+  </div>
+
+  <div class="flow">
+    <div class="flow-title">Mensagem Enviada</div>
+    <div class="flow-step">Vendedor digita → <code>POST /api/whatsapp/conversations/[id]/messages</code></div>
+    <div class="flow-step"><span class="badge bg">Janela aberta</span> → envia texto livre (grátis) &nbsp; <span class="badge by">Janela fechada</span> → só template (cobrado)</div>
+    <div class="flow-step">Optimistic update no cache (<code>setQueryData</code>) → feedback instantâneo</div>
+    <div class="flow-step">Chama BSP → Insere message (OUTBOUND) com <code>delivery_status = 'PENDING'</code></div>
+    <div class="flow-step">Webhook de status → SENT → DELIVERED → READ (só progressão, nunca retroceder)</div>
+  </div>
+
+  <h3>4.3 Camada de abstração de provider</h3>
+  <pre data-lang="typescript"><code>// lib/whatsapp/types.ts
+
+export interface WhatsAppProvider {
+  sendTextMessage(to: string, body: string, channelId: string): Promise&lt;SendResult&gt;
+  sendTemplateMessage(to: string, templateName: string, language: string,
+    variables: Record&lt;string, string&gt;, channelId: string): Promise&lt;SendResult&gt;
+  sendMediaMessage(to: string, mediaUrl: string, mediaType: string,
+    caption: string | undefined, channelId: string): Promise&lt;SendResult&gt;
+  getTemplates(channelId: string): Promise&lt;Template[]&gt;
+  createTemplate(data: CreateTemplateData): Promise&lt;Template&gt;
+  deleteTemplate(templateName: string, channelId: string): Promise&lt;void&gt;
+  markAsRead(externalMessageId: string, channelId: string): Promise&lt;void&gt;
+  registerSender(phoneNumber: string, wabaId: string): Promise&lt;Channel&gt;
+}
+
+// lib/whatsapp/providers/twilio.ts    — implementação Twilio (Sprint 1)
+// lib/whatsapp/providers/meta.ts      — implementação Meta direta (futuro)
+// lib/whatsapp/factory.ts             — retorna o provider ativo via env var</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- 5. BANCO DE DADOS -->
+<section id="banco">
+  <div class="sec-label">05</div>
+  <h2>Banco de Dados</h2>
+  <p>Criar: <code>supabase/migrations/YYYYMMDD_whatsapp_integration.sql</code></p>
+  <div class="callout">
+    <div class="ct">Convenção multi-tenant</div>
+    Todas as novas tabelas têm <code>organization_id UUID NOT NULL</code> e RLS com policy <code>organization_id = (auth.jwt()->>'organization_id')::UUID</code>. Sem exceção.
+  </div>
+
+  <h3>Novas tabelas</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tabela</th><th>Propósito</th><th>Campos-chave</th></tr></thead>
+      <tbody>
+        <tr><td>whatsapp_channels</td><td>Canal WhatsApp conectado por org</td><td><code>waba_id</code>, <code>display_phone_number</code>, <code>status</code>, <code>provider</code>, <code>provider_config JSONB</code></td></tr>
+        <tr><td>whatsapp_templates</td><td>Templates sincronizados com a Meta</td><td><code>name</code>, <code>category</code>, <code>status</code>, <code>components JSONB</code>, <code>variables JSONB</code></td></tr>
+        <tr><td>conversations</td><td>Thread de mensagens por contato</td><td><code>external_phone</code>, <code>status</code>, <code>customer_service_window_expires_at</code>, <code>unread_count</code></td></tr>
+        <tr><td>messages</td><td>Mensagem individual</td><td><code>direction</code>, <code>type</code>, <code>content</code>, <code>media_url</code>, <code>delivery_status</code>, <code>external_message_id UNIQUE</code></td></tr>
+        <tr><td>broadcast_campaigns</td><td>Campanha de envio em massa</td><td><code>template_id</code>, <code>status</code>, contadores em tempo real</td></tr>
+        <tr><td>broadcast_recipients</td><td>Destinatário individual</td><td><code>organization_id</code> (direto, não via FK), <code>phone_number</code>, <code>status</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="dev-note">
+    <strong>broadcast_recipients:</strong> Incluir <code>organization_id UUID NOT NULL</code> diretamente. Todas as outras tabelas usam o padrão <code>organization_id = jwt()</code> no RLS — manter consistência evita bugs e queries lentas em envios grandes.
+  </div>
+
+  <h3>Alterações em tabelas existentes</h3>
+  <pre data-lang="sql"><code>-- Adicionar tipo WHATSAPP no activities
+-- (enum atual: CALL|MEETING|EMAIL|TASK|NOTE|STATUS_CHANGE)
+ALTER TYPE activity_type ADD VALUE IF NOT EXISTS 'WHATSAPP';
+
+-- WhatsApp opt-in nos contacts
+ALTER TABLE contacts ADD COLUMN IF NOT EXISTS whatsapp_opt_in BOOLEAN DEFAULT false;
+ALTER TABLE contacts ADD COLUMN IF NOT EXISTS whatsapp_opt_in_at TIMESTAMPTZ;
+
+-- Realtime nas novas tabelas
+ALTER PUBLICATION supabase_realtime ADD TABLE conversations;
+ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+
+-- Toggle da feature (tabela ai_feature_flags já existe)
+-- Inserir para cada org ao conectar o canal, remover ao desconectar
+-- INSERT INTO ai_feature_flags (organization_id, key, enabled)
+-- VALUES ($1, 'whatsapp_integration', true)
+-- ON CONFLICT (organization_id, key) DO UPDATE SET enabled = true;</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- 6. API -->
+<section id="api">
+  <div class="sec-label">06</div>
+  <h2>API Routes</h2>
+
+  <h3>6.1 Webhook do BSP</h3>
+  <div class="callout warn">
+    <div class="ct">⚠ Rota pública — proxy não intercepta /api/*</div>
+    Confirmado no <code>copilot-instructions.md</code>: rotas <code>/api/</code> retornam 401/403 diretamente, <strong>sem redirect</strong>. Segurança via assinatura do BSP, não via Supabase auth.
+  </div>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/webhook</span><span class="rd">Verificação do challenge (Meta/BSP)</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/webhook</span><span class="rd">Recebe mensagens e status updates — responde 200 imediatamente</span></div>
+
+  <h3>6.2 Canais</h3>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/channels</span><span class="rd">Registrar novo canal (após Embedded Signup)</span></div>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/channels</span><span class="rd">Listar canais da organização</span></div>
+  <div class="api-route"><span class="method PATCH">PATCH</span><span class="rp">/api/whatsapp/channels/[id]</span><span class="rd">Atualizar configurações</span></div>
+  <div class="api-route"><span class="method DELETE">DELETE</span><span class="rp">/api/whatsapp/channels/[id]</span><span class="rd">Desconectar canal</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/channels/[id]/test</span><span class="rd">Enviar mensagem de teste</span></div>
+
+  <h3>6.3 Templates</h3>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/templates</span><span class="rd">Listar templates da org</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/templates</span><span class="rd">Criar e submeter para aprovação Meta</span></div>
+  <div class="api-route"><span class="method DELETE">DELETE</span><span class="rp">/api/whatsapp/templates/[id]</span><span class="rd">Deletar template</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/templates/sync</span><span class="rd">Forçar sincronização de status com Meta</span></div>
+
+  <div class="dev-note">
+    <strong>quick_scripts ≠ whatsapp_templates:</strong> São entidades distintas. Quick scripts (<code>quick_scripts</code>) são rascunhos livres do vendedor. WhatsApp templates (<code>whatsapp_templates</code>) são aprovados pela Meta e necessários fora da janela de 24h. Não misturar, não reutilizar.
+  </div>
+
+  <h3>6.4 Conversas e Mensagens</h3>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/conversations</span><span class="rd">Listar com filtros (status, assigned, etc.)</span></div>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/conversations/[id]</span><span class="rd">Detalhes + mensagens paginadas</span></div>
+  <div class="api-route"><span class="method PATCH">PATCH</span><span class="rp">/api/whatsapp/conversations/[id]</span><span class="rd">Status, atribuição, deal_id</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/conversations/[id]/messages</span><span class="rd">Enviar mensagem (verifica janela 24h)</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/conversations/[id]/read</span><span class="rd">Marcar conversa como lida</span></div>
+
+  <h3>6.5 Broadcast</h3>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/broadcasts</span><span class="rd">Criar campanha</span></div>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/broadcasts</span><span class="rd">Listar campanhas</span></div>
+  <div class="api-route"><span class="method GET">GET</span><span class="rp">/api/whatsapp/broadcasts/[id]</span><span class="rd">Detalhes + recipients</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/broadcasts/[id]/send</span><span class="rd">Iniciar envio com rate limiting</span></div>
+  <div class="api-route"><span class="method POST">POST</span><span class="rp">/api/whatsapp/broadcasts/[id]/cancel</span><span class="rd">Cancelar</span></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 7. UI -->
+<section id="ui">
+  <div class="sec-label">07</div>
+  <h2>Interface do Usuário</h2>
+
+  <h3>7.1 Configurações — Conectar WhatsApp</h3>
+  <p>Nova pasta: <code>features/settings/whatsapp/</code> — seguir a estrutura de <code>features/settings/components/</code>.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Estado</th><th>UI</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge bd">Não conectado</span></td><td>Card com ícone + botão verde <strong>"Conectar WhatsApp"</strong></td></tr>
+        <tr><td><span class="badge bg">Conectado</span></td><td>Card com ✅ + número, nome, status + botões "Desconectar" e "Enviar teste"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Adicionar ao painel de configurações: Quality Rating do número</h4>
+  <div class="dev-note">
+    <strong>Novo campo na tela de configurações:</strong> Buscar o Quality Rating atual do número via API do BSP (High / Medium / Low) e exibir com badge colorido. Clientes que já sofreram banimento vão monitorar isso de perto. É uma feature pequena de implementar com alto valor percebido.
+  </div>
+
+  <h4>Fluxo Embedded Signup</h4>
+  <pre data-lang="javascript"><code>&lt;script src="https://connect.facebook.net/en_US/sdk.js"&gt;&lt;/script&gt;
+
+FB.login(function(response) {
+  fetch('/api/whatsapp/channels', {
+    method: 'POST',
+    body: JSON.stringify({ code: response.authResponse.code })
+  })
+}, {
+  config_id: '&lt;CONFIG_ID&gt;',
+  response_type: 'code',
+  override_default_response_type: true,
+  extras: { featureType: '', sessionInfoVersion: '3' }
+})</code></pre>
+
+  <h3>7.2 Chat no Cockpit do Deal</h3>
+  <p>Arquivo: <code>features/deals/cockpit/DealCockpitClient.tsx</code></p>
+  <pre data-lang="typescript"><code>// Tab type atual — adicionar 'conversas'
+type Tab = 'chat' | 'notas' | 'scripts' | 'arquivos' | 'conversas' // ADICIONAR
+
+// Adicionar botão de tab com badge de unread count
+// Renderizar &lt;DealConversations dealId={deal.id} /&gt; quando tab === 'conversas'</code></pre>
+
+  <div class="dev-note">
+    <strong>MessageComposerModal:</strong> Já existe em <code>features/inbox/components/MessageComposerModal.tsx</code> com suporte a canal WHATSAPP. Evoluir para: se <code>ai_feature_flags['whatsapp_integration'] === true</code> na org, enviar via API. Senão, manter comportamento atual (<code>wa.me/</code> link) como fallback.
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Componente a criar</th><th>Responsabilidade</th></tr></thead>
+      <tbody>
+        <tr><td>DealConversations</td><td>Lista conversas do deal. Se nenhuma, botão "Enviar primeira mensagem"</td></tr>
+        <tr><td>ConversationThread</td><td>Chat: scroll infinito, bolhas por direção, status de entrega, mídia, timestamps por dia</td></tr>
+        <tr><td>MessageInput</td><td>Compositor com alerta de janela 24h, upload de mídia, botão "Sugerir resposta" via IA</td></tr>
+        <tr><td>TemplatePicker</td><td>Modal com templates APPROVED agrupados por categoria, preview, auto-fill de variáveis do deal/contact</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Status de entrega visual</h4>
+  <ul class="plain">
+    <li>✓ <strong style="color:var(--text)">Enviada</strong></li>
+    <li>✓✓ <strong style="color:var(--text)">Entregue</strong> — checks cinza</li>
+    <li style="color:var(--blue)">✓✓ <strong style="color:var(--text)">Lida</strong> — checks azuis</li>
+    <li>✗ <strong style="color:var(--text)">Falhou</strong> — vermelho com mensagem de erro</li>
+    <li>📱 / 💻 Badge de origem — <em>verificar disponibilidade no payload do BSP escolhido antes de implementar</em></li>
+  </ul>
+
+  <h3>7.3 Inbox de Mensagens</h3>
+  <p>Evoluir <code>features/inbox/InboxPage.tsx</code> com split-view: lista (~40%) + thread (~60%).</p>
+  <ul class="plain">
+    <li>Filtros: Todas, Abertas, Minhas (assigned = eu), Pendentes, Resolvidas</li>
+    <li>Busca por nome do contato ou conteúdo da mensagem</li>
+    <li>Ações rápidas: atribuir a mim, resolver, vincular a deal</li>
+    <li>Realtime: nova mensagem sobe conversa para o topo + notificação via <code>addToast()</code></li>
+  </ul>
+
+  <h3>7.4 Wizard de Broadcast (4 passos)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Passo</th><th>O que fazer</th></tr></thead>
+      <tbody>
+        <tr><td>1 — Template</td><td>Selecionar template APPROVED + preview visual da bolha</td></tr>
+        <tr><td>2 — Audiência</td><td>Filtros de contatos + preview "X contatos, Y com opt-in" — excluir sem opt-in automaticamente</td></tr>
+        <tr><td>3 — Variáveis</td><td>Mapear <code>{"{{1}}"}</code>, <code>{"{{2}}"}</code> para campos do contato/deal com preview real</td></tr>
+        <tr><td>4 — Confirmar</td><td>Resumo + estimativa de custo (só templates cobrados) + "Enviar agora" ou "Agendar"</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 8. COEXISTÊNCIA -->
+<section id="coexistencia">
+  <div class="sec-label">08</div>
+  <h2>Coexistência com WhatsApp no Celular</h2>
+  <div class="callout">
+    <div class="ct">Como funciona</div>
+    Cloud API suporta coexistência nativa desde 2024. Vendedor continua usando o celular normalmente — sem QR code, sem desconectar. Mensagens de ambos os lados são sincronizadas via webhook.
+  </div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-title">📱 → CRM</div><p>Mensagens enviadas pelo celular chegam no CRM via webhook. Marcar <code>sent_from_phone = true</code> se o BSP fornecer esse metadata.</p></div>
+    <div class="card"><div class="card-title">💻 → Celular</div><p>Mensagens enviadas pelo CRM aparecem no celular automaticamente. Sincronização bidirecional nativa.</p></div>
+  </div>
+  <div class="callout warn">
+    <div class="ct">⚠ Verificar antes de implementar o badge</div>
+    O campo <code>sent_from_phone</code> depende de metadata no payload do webhook do BSP. Confirmar se está disponível no BSP escolhido antes de construir o badge visual.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 9. REALTIME -->
+<section id="realtime">
+  <div class="sec-label">09</div>
+  <h2>Realtime e Cache</h2>
+
+  <h3>9.1 Estender useRealtimeSync</h3>
+  <p>Arquivo: <code>lib/realtime/useRealtimeSync.ts</code> — adicionar <code>'conversations'</code> e <code>'messages'</code> ao tipo <code>RealtimeTable</code> e ao mapeamento de query keys. Ver padrão de código na seção "Padrões do Código" acima.</p>
+
+  <h3>9.2 Query Keys</h3>
+  <p>Criar <code>lib/query/whatsapp.ts</code> com <code>whatsappKeys</code>. Ver padrão de código na seção acima.</p>
+  <div class="dev-note">
+    <strong>Não criar WhatsApp Context.</strong> O padrão do CRM é TanStack Query hooks — o <code>CRMContext</code> existente é só fachada por compatibilidade. Criar hooks customizados em <code>lib/query/whatsapp.ts</code> e usá-los nos componentes diretamente.
+  </div>
+  <div class="dev-note">
+    <strong>DEALS_VIEW_KEY:</strong> Para invalidar qualquer query relacionada ao cockpit de deal, usar <code>queryClient.invalidateQueries({ queryKey: DEALS_VIEW_KEY })</code> importado de <code>@/lib/query</code>.
+  </div>
+
+  <h3>9.3 Otimizações</h3>
+  <ul class="plain">
+    <li>Ao <strong style="color:var(--text)">enviar mensagem:</strong> <code>setQueryData</code> para optimistic update — feedback instantâneo (ver padrão de código acima)</li>
+    <li>Ao <strong style="color:var(--text)">receber via realtime:</strong> <code>invalidateQueries</code> + refetch em background</li>
+    <li>Regra do copilot-instructions: preferir <code>setQueryData</code> sobre <code>invalidateQueries</code> quando seguro</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<!-- 10. SEGURANÇA -->
+<section id="seguranca">
+  <div class="sec-label">10</div>
+  <h2>Segurança</h2>
+  <div class="callout danger">
+    <div class="ct">🔴 Multi-tenant — CRÍTICO</div>
+    <strong>TODA</strong> query deve filtrar por <code>organization_id</code>. O webhook usa <code>createStaticAdminClient()</code> que bypassa RLS — nesse caso o filtro manual por org é obrigatório. Ver padrão de código na seção acima.
+  </div>
+  <h3>10.2 Credenciais</h3>
+  <ul class="plain">
+    <li>Account SID, Auth Token, App Secret: <strong style="color:var(--text)">apenas</strong> em env vars server-side</li>
+    <li><strong style="color:var(--text)">Nunca</strong> retornar credenciais em responses da API</li>
+    <li>Tokens de WABA (Cloud API direta): criptografar via Supabase Vault</li>
+  </ul>
+  <h3>10.3 Validação de Webhook</h3>
+  <p>Ver padrão de código na seção "Padrões do Código" acima.</p>
+  <h3>10.4 Opt-in e LGPD</h3>
+  <div class="callout warn">
+    <div class="ct">⚠ Opt-in obrigatório + LGPD</div>
+    Broadcast <strong>só</strong> envia para <code>whatsapp_opt_in = true</code>. Enviar sem consentimento pode banir o número permanentemente.<br><br>
+    As tabelas <code>user_consents</code> e <code>audit_logs</code> <strong>já existem</strong> no schema. Logar operações WhatsApp em <code>audit_logs</code> para rastreabilidade. Campo <code>deleted_at</code> nas tabelas de mensagens pode ser necessário futuramente para LGPD — anotar como dívida técnica.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 11. DIFICULDADES -->
+<section id="dificuldades">
+  <div class="sec-label">11</div>
+  <h2>Dificuldades e Cuidados</h2>
+
+  <h3>Messaging Tiers — como o WhatsApp limita volume</h3>
+  <p style="color:var(--text-dim);font-size:14px">WhatsApp não limita por req/s mas por <strong>usuários únicos em 24h</strong>. O número sobe de tier automaticamente com uso consistente. O broadcast deve verificar o tier atual e alertar se a campanha ultrapassa o limite diário.</p>
+  <div class="tier-table">
+    <div class="tier-cell"><div class="tier-name">Tier 1</div><div class="tier-val">1K</div><div class="tier-sub">usuários/dia</div></div>
+    <div class="tier-cell"><div class="tier-name">Tier 2</div><div class="tier-val">10K</div><div class="tier-sub">usuários/dia</div></div>
+    <div class="tier-cell"><div class="tier-name">Tier 3</div><div class="tier-val">100K</div><div class="tier-sub">usuários/dia</div></div>
+    <div class="tier-cell"><div class="tier-name">Tier 4</div><div class="tier-val">∞</div><div class="tier-sub">ilimitado</div></div>
+  </div>
+
+  <h3>Custos por tipo de conversa (Brasil)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tipo</th><th>Quem inicia</th><th>Custo estimado</th><th>Obs</th></tr></thead>
+      <tbody>
+        <tr><td>Marketing</td><td>Empresa</td><td>~R$ 0,50–1,00/conversa</td><td>Templates de marketing</td></tr>
+        <tr><td>Utilidade</td><td>Empresa</td><td>~R$ 0,15–0,25/conversa</td><td>Templates transacionais</td></tr>
+        <tr><td>Autenticação</td><td>Empresa</td><td>~R$ 0,10–0,15/conversa</td><td>OTP, verificação</td></tr>
+        <tr><td><strong>Serviço</strong></td><td><strong>Cliente</strong></td><td><strong><span class="badge bg">Grátis</span></strong></td><td>Janela de 24h respondida</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Tabela de riscos técnicos</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Desafio</th><th>O que é</th><th>Como resolver</th></tr></thead>
+      <tbody>
+        <tr><td>Registro ISV</td><td>Aprovação Meta leva 3–4 semanas</td><td>Iniciar antes do dev. Sprints 1–2 usam sandbox.</td></tr>
+        <tr><td>Webhook síncrono</td><td>Download de mídia estoura 5s</td><td>Responder 200 imediatamente, processar em background</td></tr>
+        <tr><td>Aprovação templates</td><td>Meta pode rejeitar ou demorar 24h+</td><td>UI com badge de status, botão sync, orientar sobre regras</td></tr>
+        <tr><td>Janela de 24h</td><td>Fora da janela, só templates cobrados</td><td>UI clara: bloquear texto, mostrar tempo restante, sugerir template</td></tr>
+        <tr><td>Webhook fora de ordem</td><td>BSP pode enviar status desordenados</td><td>Só aceitar progressão — SENT→DELIVERED ok, retroceder ignora</td></tr>
+        <tr><td>Dedup de webhooks</td><td>Mesmo webhook pode chegar 2x</td><td>UNIQUE constraint em <code>external_message_id</code></td></tr>
+        <tr><td>Mídia temporária</td><td>URLs do BSP/Meta expiram</td><td>Baixar em background e salvar no Supabase Storage imediatamente</td></tr>
+        <tr><td>Telefones mal formatados</td><td>DDD sem +55, formatos variados</td><td>Normalizar via <code>normalizePhoneE164()</code> de <code>lib/phone.ts</code></td></tr>
+        <tr><td>Contato duplicado</td><td>Mesmo phone em contacts diferentes</td><td>Buscar por phone normalizado, alertar se ambíguo</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 12. IMPLEMENTAÇÃO -->
+<section id="implementacao">
+  <div class="sec-label">12</div>
+  <h2>Ordem de Implementação Sugerida</h2>
+  <div class="callout warn">
+    <div class="ct">⚠ Timeline com dependência da Meta</div>
+    Fases 1 e 2 usam sandbox do BSP e não dependem da aprovação ISV. Fase 3 (Embedded Signup real) só pode ser concluída com aprovação Meta em mãos — processo leva 3–4 semanas e deve ser iniciado <strong>antes</strong> do desenvolvimento. Correr os dois em paralelo.
+  </div>
+
+  <!-- VISÃO POR FASE -->
+  <h3 style="font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:24px 0 12px">Visão Geral por Fase — O que é entregue</h3>
+  <div class="fases-grid">
+
+    <div class="fase-card">
+      <div class="fase-card-top">
+        <div class="fase-num">Fase 1</div>
+        <div class="fase-nome">Fundação & Mensagens Básicas</div>
+        <div class="fase-datas">7 Abr → 16 Mai 2026</div>
+      </div>
+      <div class="fase-card-mid">
+        <div class="fase-entrega-label">O que fica funcionando</div>
+        <div class="fase-entrega-item">Banco de dados com todas as tabelas novas criadas</div>
+        <div class="fase-entrega-item">Sistema recebe mensagens do WhatsApp via webhook</div>
+        <div class="fase-entrega-item">Sistema consegue enviar mensagens de texto em sandbox</div>
+        <div class="fase-entrega-item">Base técnica pronta para tudo que vem a seguir</div>
+      </div>
+      <div class="fase-card-bot">
+        <div>
+          <div class="fase-sprints">Sprints 1 + 2 · ~6 semanas</div>
+          <div class="fase-aviso">Usuário ainda não vê nada na UI</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fase-card">
+      <div class="fase-card-top">
+        <div class="fase-num">Fase 2</div>
+        <div class="fase-nome">WhatsApp dentro do CRM</div>
+        <div class="fase-datas">19 Mai → 20 Jun 2026</div>
+      </div>
+      <div class="fase-card-mid">
+        <div class="fase-entrega-label">O que fica funcionando</div>
+        <div class="fase-entrega-item">Tela de configurações para conectar número WhatsApp</div>
+        <div class="fase-entrega-item">Aba "Conversas" dentro do deal no CRM</div>
+        <div class="fase-entrega-item">Envio e recebimento de mensagens direto no deal</div>
+        <div class="fase-entrega-item">Mensagens aparecem no histórico de atividades do deal</div>
+      </div>
+      <div class="fase-card-bot">
+        <div>
+          <div class="fase-sprints">Sprint 3 · ~5 semanas</div>
+          <div class="fase-aviso">⚠ Depende da aprovação Meta</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fase-card">
+      <div class="fase-card-top">
+        <div class="fase-num">Fase 3</div>
+        <div class="fase-nome">Templates & Inbox</div>
+        <div class="fase-datas">23 Jun → 18 Jul 2026</div>
+      </div>
+      <div class="fase-card-mid">
+        <div class="fase-entrega-label">O que fica funcionando</div>
+        <div class="fase-entrega-item">Criar e gerenciar templates aprovados pela Meta</div>
+        <div class="fase-entrega-item">Usar template no cockpit com variáveis preenchidas automáticas</div>
+        <div class="fase-entrega-item">Inbox centralizado com todas as conversas da empresa</div>
+        <div class="fase-entrega-item">Filtros por status, busca por contato</div>
+      </div>
+      <div class="fase-card-bot">
+        <div>
+          <div class="fase-sprints">Sprint 4 · ~4 semanas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fase-card">
+      <div class="fase-card-top">
+        <div class="fase-num">Fase 4</div>
+        <div class="fase-nome">Broadcast & Polimento</div>
+        <div class="fase-datas">21 Jul → 15 Ago 2026</div>
+      </div>
+      <div class="fase-card-mid">
+        <div class="fase-entrega-label">O que fica funcionando</div>
+        <div class="fase-entrega-item">Envio de campanhas em massa para lista de contatos</div>
+        <div class="fase-entrega-item">Estimativa de custo antes de disparar a campanha</div>
+        <div class="fase-entrega-item">Dashboard em tempo real do andamento da campanha</div>
+        <div class="fase-entrega-item">Produto completo, testado e pronto para produção</div>
+      </div>
+      <div class="fase-card-bot">
+        <div>
+          <div class="fase-sprints">Sprint 5 · ~4 semanas</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout info" style="margin-bottom:24px">
+    <div class="ct">📅 Prazo total estimado: ~19 semanas (até ~15 Ago 2026)</div>
+    Sugestão: pagamento por entrega de fase. A cada fase concluída e aprovada, o pagamento é liberado. Valor a combinar.
+  </div>
+
+  <h3 style="font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px">Detalhe técnico por Sprint</h3>
+
+  <div class="sprint">
+    <div class="sprint-hd"><div class="sprint-hd-l"><span class="sprint-num">Sprint 1</span><span class="sprint-title">Fundação — Banco + Backend Core</span></div><span class="badge bb">7 Abr – 25 Abr</span></div>
+    <div class="sprint-body">
+      <div class="sprint-task">Migration SQL — novas tabelas + RLS + <code>activity_type += 'WHATSAPP'</code> + <code>ai_feature_flags</code></div>
+      <div class="sprint-task">Tipos TypeScript — interface <code>WhatsAppProvider</code> + tipos de dados</div>
+      <div class="sprint-task">Implementação do provider BSP escolhido (<code>lib/whatsapp/providers/twilio.ts</code>)</div>
+      <div class="sprint-task">Webhook handler com resposta 200 imediata + processamento assíncrono de mídia</div>
+      <div class="sprint-task">API de canais (<code>app/api/whatsapp/channels/</code>)</div>
+    </div>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-hd"><div class="sprint-hd-l"><span class="sprint-num">Sprint 2</span><span class="sprint-title">Mensagens Core — Enviar/Receber</span></div><span class="badge bb">28 Abr – 16 Mai</span></div>
+    <div class="sprint-body">
+      <div class="sprint-task">API de conversas + envio de mensagens (com verificação de janela 24h)</div>
+      <div class="sprint-task">Componente <code>ConversationThread</code> — bolhas, status, mídia, timestamps por dia</div>
+      <div class="sprint-task">Componente <code>MessageInput</code> — detecção de janela, alerta visual, upload de mídia</div>
+      <div class="sprint-task">Estender <code>useRealtimeSync</code> + criar <code>lib/query/whatsapp.ts</code></div>
+      <div class="sprint-task">Optimistic updates com <code>setQueryData</code> no envio</div>
+    </div>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-hd"><div class="sprint-hd-l"><span class="sprint-num">Sprint 3</span><span class="sprint-title">Configurações + Cockpit</span></div><span class="badge by">19 Mai – 20 Jun · ⚠ Meta</span></div>
+    <div class="sprint-body">
+      <div class="sprint-task">Tela de configurações WhatsApp com Embedded Signup + Quality Rating do número</div>
+      <div class="sprint-task">Tab "Conversas" em <code>DealCockpitClient.tsx</code> + componente <code>DealConversations</code></div>
+      <div class="sprint-task">Evoluir <code>MessageComposerModal</code> — API se canal conectado, <code>wa.me/</code> como fallback</div>
+      <div class="sprint-task">Registrar mensagens WhatsApp como activity tipo 'WHATSAPP' no feed do deal</div>
+    </div>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-hd"><div class="sprint-hd-l"><span class="sprint-num">Sprint 4</span><span class="sprint-title">Templates + Inbox</span></div><span class="badge bb">23 Jun – 18 Jul</span></div>
+    <div class="sprint-body">
+      <div class="sprint-task">API de templates (CRUD + sync com Meta)</div>
+      <div class="sprint-task">UI de gerenciamento — lista + criação + preview visual da bolha</div>
+      <div class="sprint-task"><code>TemplatePicker</code> no cockpit com auto-fill de variáveis do deal/contact</div>
+      <div class="sprint-task">Inbox split-view com filtros, busca e ações rápidas</div>
+    </div>
+  </div>
+
+  <div class="sprint">
+    <div class="sprint-hd"><div class="sprint-hd-l"><span class="sprint-num">Sprint 5</span><span class="sprint-title">Broadcast + Polimento Final</span></div><span class="badge bb">21 Jul – 15 Ago</span></div>
+    <div class="sprint-body">
+      <div class="sprint-task">API de broadcast com <code>organization_id</code> direto em <code>broadcast_recipients</code></div>
+      <div class="sprint-task">Wizard 4 passos com estimativa de custo correta (só templates cobrados, serviço é grátis)</div>
+      <div class="sprint-task">Rate limiting respeitando messaging tier atual do número</div>
+      <div class="sprint-task">Dashboard da campanha em tempo real via Supabase Realtime</div>
+      <div class="sprint-task">Logar todas operações WhatsApp em <code>audit_logs</code> para LGPD</div>
+      <div class="sprint-task">Testes completos — <code>npm run precheck</code> passando</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 13. TESTES -->
+<section id="testes">
+  <div class="sec-label">13</div>
+  <h2>Testes</h2>
+  <h3>13.1 Unitários (Vitest)</h3>
+  <ul class="plain">
+    <li><code>lib/whatsapp/providers/twilio.test.ts</code> — mock da API, testar todas as funções do provider</li>
+    <li><code>lib/whatsapp/webhookHandler.test.ts</code> — payloads fixture reais do BSP</li>
+    <li>Normalização de telefone: +55 com/sem DDD, formatos variados</li>
+    <li>Lógica de janela 24h: bloquear texto livre, aceitar template</li>
+  </ul>
+  <h3>13.2 Integração</h3>
+  <ul class="plain">
+    <li>Webhook com assinatura inválida → <code>403</code></li>
+    <li>Webhook válido → cria conversa e mensagem, retorna <code>200</code> em &lt;100ms</li>
+    <li>Envio fora da janela com texto → rejeita com erro claro</li>
+    <li>Envio fora da janela com template → aceita</li>
+    <li>Broadcast sem opt-in → status <code>SKIPPED</code></li>
+    <li>Buscar dados de outra org → retorna vazio (RLS)</li>
+    <li>Webhook duplicado (mesmo <code>external_message_id</code>) → não duplica mensagem</li>
+  </ul>
+  <h3>13.3 Validação obrigatória antes de entregar</h3>
+  <pre data-lang="bash"><code>npm run lint        # zero warnings
+npm run typecheck   # sem erros TypeScript
+npm run test:run    # todos os testes passando
+npm run precheck    # lint + typecheck + test de uma vez</code></pre>
+</section>
+
+<div class="divider"></div>
+
+<!-- 14. LINKS -->
+<section id="links">
+  <div class="sec-label">14</div>
+  <h2>Links de Referência</h2>
+  <h3>Twilio — BSP recomendado</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Recurso</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>WhatsApp com Twilio</td><td><a href="https://www.twilio.com/docs/whatsapp" target="_blank">twilio.com/docs/whatsapp</a></td></tr>
+        <tr><td>Tech Provider (ISV)</td><td><a href="https://www.twilio.com/docs/whatsapp/isv/tech-provider-program" target="_blank">…/isv/tech-provider-program</a></td></tr>
+        <tr><td>Integration guide ISV</td><td><a href="https://www.twilio.com/docs/whatsapp/isv/tech-provider-program/integration-guide" target="_blank">…/integration-guide</a></td></tr>
+        <tr><td>Register senders</td><td><a href="https://www.twilio.com/docs/whatsapp/isv/register-senders" target="_blank">…/register-senders</a></td></tr>
+        <tr><td>Content Template Builder</td><td><a href="https://www.twilio.com/docs/content/content-api-resources" target="_blank">…/content-api-resources</a></td></tr>
+        <tr><td>SDK Node.js</td><td><a href="https://www.twilio.com/docs/libraries/reference/twilio-node" target="_blank">…/twilio-node</a></td></tr>
+        <tr><td>Sandbox (teste)</td><td><a href="https://www.twilio.com/docs/whatsapp/sandbox" target="_blank">…/whatsapp/sandbox</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Meta — API Oficial</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Recurso</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr><td>Cloud API overview</td><td><a href="https://developers.facebook.com/docs/whatsapp/cloud-api/overview" target="_blank">…/cloud-api/overview</a></td></tr>
+        <tr><td>Embedded Signup impl.</td><td><a href="https://developers.facebook.com/docs/whatsapp/embedded-signup/implementation" target="_blank">…/embedded-signup/implementation</a></td></tr>
+        <tr><td>Send messages</td><td><a href="https://developers.facebook.com/docs/whatsapp/cloud-api/messages/send-messages" target="_blank">…/send-messages</a></td></tr>
+        <tr><td>Templates</td><td><a href="https://developers.facebook.com/docs/whatsapp/business-management-api/message-templates" target="_blank">…/message-templates</a></td></tr>
+        <tr><td>Webhooks</td><td><a href="https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/components" target="_blank">…/webhooks/components</a></td></tr>
+        <tr><td>Pricing (jul/2025)</td><td><a href="https://developers.facebook.com/docs/whatsapp/pricing" target="_blank">…/whatsapp/pricing</a></td></tr>
+        <tr><td>Messaging Tiers</td><td><a href="https://developers.facebook.com/docs/whatsapp/messaging-limits" target="_blank">…/messaging-limits</a></td></tr>
+        <tr><td>Opt-in requirements</td><td><a href="https://developers.facebook.com/docs/whatsapp/overview/getting-opt-in" target="_blank">…/getting-opt-in</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Arquivos-chave no Levante CRM</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Arquivo</th><th>O que é</th></tr></thead>
+      <tbody>
+        <tr><td>.github/copilot-instructions.md</td><td><strong>LEIA PRIMEIRO</strong> — regras de auth, multi-tenant, cache</td></tr>
+        <tr><td>lib/supabase/server.ts</td><td><code>createClient()</code> para rotas, <code>createStaticAdminClient()</code> para webhook/service role</td></tr>
+        <tr><td>lib/query/index.tsx + queryKeys.ts</td><td>Padrão de query keys. <code>DEALS_VIEW_KEY</code> para invalidar cockpit.</td></tr>
+        <tr><td>lib/realtime/useRealtimeSync.ts</td><td>Hook de realtime com dedup — estender para conversations/messages</td></tr>
+        <tr><td>lib/phone.ts</td><td><code>normalizePhoneE164()</code> e <code>toWhatsAppPhone()</code> — já implementadas</td></tr>
+        <tr><td>context/AuthContext.tsx</td><td><code>useAuth()</code> → <code>{ organizationId, profile, user }</code></td></tr>
+        <tr><td>context/ToastContext.tsx</td><td><code>useToast()</code> → <code>{ addToast(msg, type) }</code></td></tr>
+        <tr><td>features/deals/cockpit/DealCockpitClient.tsx</td><td>Cockpit — adicionar tab conversas</td></tr>
+        <tr><td>features/inbox/components/MessageComposerModal.tsx</td><td>Composer atual — evoluir para API real</td></tr>
+        <tr><td>app/api/settings/ai-features/route.ts</td><td>Exemplo de rota autenticada — copiar padrão</td></tr>
+        <tr><td>supabase/migrations/20251201000000_schema_init.sql</td><td>Schema atual — referência antes de criar a nova migration</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- NOTAS FINAIS -->
+  <div style="margin-top:40px;background:var(--bg-card);border:1px solid var(--border-bright);border-radius:12px;padding:24px">
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:#fff;margin-bottom:13px;display:flex;align-items:center;gap:9px">
+      <span style="width:7px;height:7px;background:var(--orange);border-radius:2px;display:inline-block"></span>
+      Notas Finais
+    </div>
+    <ol class="steps">
+      <li>Leia os arquivos na ordem da seção "Por onde começar" no topo deste documento</li>
+      <li>Rode <code>npm run dev</code> e explore deals/cockpit e inbox antes de codar</li>
+      <li>A interface <strong>WhatsAppProvider</strong> é a peça mais importante — tudo depende dela</li>
+      <li>O <strong>webhook handler</strong> é a fundação. Priorizar desde o início que ele seja assíncrono</li>
+      <li>Não criar WhatsApp Context — usar TanStack Query hooks como o restante do projeto</li>
+      <li>Usar <code>ai_feature_flags</code> com <code>key = 'whatsapp_integration'</code> para toggle da feature</li>
+      <li>Logar operações WhatsApp em <code>audit_logs</code> — tabela já existe no schema</li>
+      <li>Liberdade para trocar o BSP se encontrar opção melhor — a abstração permite isso</li>
+      <li><strong>Multi-tenant é inegociável</strong> — TODA query filtra por <code>organization_id</code></li>
+      <li>Em dúvida sobre qualquer padrão: olhe como deals e contacts foram implementados e replique</li>
+    </ol>
+  </div>
+</section>
+
+</main>
+
+<script>
+// Barra de progresso
+window.addEventListener('scroll', () => {
+  const d = document.documentElement
+  document.getElementById('progress').style.width = (d.scrollTop / (d.scrollHeight - d.clientHeight) * 100) + '%'
+})
+
+// Highlight do menu conforme scroll
+const navItems = document.querySelectorAll('.nav-item')
+
+const sections = Array.from(navItems)
+  .map(n => document.getElementById((n.getAttribute('href') || '').replace('#', '')))
+  .filter(Boolean)
+
+function setActive(id) {
+  navItems.forEach(n => n.classList.toggle('active', n.getAttribute('href') === '#' + id))
+}
+
+function updateActiveNav() {
+  const offset = window.innerHeight * 0.25
+  let current = sections[0]
+  for (const s of sections) {
+    if (s.getBoundingClientRect().top <= offset) current = s
+  }
+  if (current) setActive(current.id)
+}
+
+window.addEventListener('scroll', updateActiveNav, { passive: true })
+updateActiveNav()
+
+// Highlight imediato ao clicar
+navItems.forEach(n => n.addEventListener('click', () => {
+  navItems.forEach(x => x.classList.remove('active'))
+  n.classList.add('active')
+}))
+</script>
+</body>
+</html>

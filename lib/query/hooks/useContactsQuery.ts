@@ -10,15 +10,16 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData, type QueryKey 
 import { queryKeys } from '../index';
 import { contactsService, companiesService } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import { stripAccents } from '@/lib/utils';
 import type { Contact, ContactStage, Company, PaginationState, PaginatedResponse, ContactsServerFilters } from '@/types';
 
 function matchesContactsServerFilters(contact: Contact, filters?: ContactsServerFilters): boolean {
   if (!filters) return true;
 
   if (filters.search?.trim()) {
-    const q = filters.search.trim().toLowerCase();
-    const nameOk = (contact.name || '').toLowerCase().includes(q);
-    const emailOk = (contact.email || '').toLowerCase().includes(q);
+    const q = stripAccents(filters.search.trim().toLowerCase());
+    const nameOk = stripAccents((contact.name || '').toLowerCase()).includes(q);
+    const emailOk = stripAccents((contact.email || '').toLowerCase()).includes(q);
     if (!nameOk && !emailOk) return false;
   }
 
@@ -85,9 +86,9 @@ export const useContacts = (filters?: ContactsFilters) => {
           if (filters.stage && contact.stage !== filters.stage) return false;
           if (filters.status && contact.status !== filters.status) return false;
           if (filters.search) {
-            const search = filters.search.toLowerCase();
-            const matchName = (contact.name || '').toLowerCase().includes(search);
-            const matchEmail = (contact.email || '').toLowerCase().includes(search);
+            const search = stripAccents(filters.search.toLowerCase());
+            const matchName = stripAccents((contact.name || '').toLowerCase()).includes(search);
+            const matchEmail = stripAccents((contact.email || '').toLowerCase()).includes(search);
             if (!matchName && !matchEmail) return false;
           }
           return true;

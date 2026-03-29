@@ -409,7 +409,7 @@ Uma lista organizada com todas as atividades, filtráveis por:
 - Status (Atrasadas, Hoje, Próximas)
 
 **Calendário:**
-Visualização mensal com as atividades posicionadas nas datas. Você pode arrastar uma atividade de um dia para outro para reagendar.
+Visualização semanal com as atividades posicionadas nos horários. Você pode arrastar uma atividade de um slot para outro para reagendar.
 
 ### Atividades criadas automaticamente
 

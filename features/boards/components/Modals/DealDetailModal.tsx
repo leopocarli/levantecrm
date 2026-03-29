@@ -6,6 +6,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { LossReasonModal } from '@/components/ui/LossReasonModal';
 import { useMoveDealSimple } from '@/lib/query/hooks';
 import { FocusTrap, useFocusReturn } from '@/lib/a11y';
+import { stripAccents, formatCurrencyBRL, formatInputCurrency, parseCurrencyInput } from '@/lib/utils';
 import { Activity } from '@/types';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import { useResponsiveMode } from '@/hooks/useResponsiveMode';
@@ -34,7 +35,12 @@ import {
   Bot,
   Tag as TagIcon,
   Plus,
+  Clock,
+  Signal,
+  Percent,
+  Send,
 } from 'lucide-react';
+import { ContactActions } from '@/components/ui/ContactActions';
 import { StageProgressBar } from '../StageProgressBar';
 import { ActivityRow } from '@/features/activities/components/ActivityRow';
 import { formatPriorityPtBr } from '@/lib/utils/priority';
@@ -144,7 +150,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   useEffect(() => {
     if (isOpen && deal) {
       setEditTitle(deal.title);
-      setEditValue(deal.value.toString());
+      setEditValue(formatInputCurrency(String(deal.value * 100)));
       setAiResult(null);
       setEmailDraft(null);
       setObjectionResponses([]);
@@ -214,10 +220,10 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   const tagSuggestions = (() => {
     const q = normalizeTag(tagQuery);
     if (!q) return [];
-    const qLower = q.toLowerCase();
+    const qLower = stripAccents(q.toLowerCase());
     return (availableTags || [])
       .filter(t => !tagsLower.has(t.toLowerCase()))
-      .filter(t => t.toLowerCase().includes(qLower))
+      .filter(t => stripAccents(t.toLowerCase()).includes(qLower))
       .slice(0, 8);
   })();
 
@@ -312,7 +318,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
 
   const handleAddCustomItem = () => {
     const name = customItemName.trim();
-    const price = Number(customItemPrice);
+    const price = parseCurrencyInput(customItemPrice);
     const qty = Number(customItemQuantity);
     if (!name) {
       addToast('Digite o nome do item.', 'warning');
@@ -336,7 +342,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
     });
 
     setCustomItemName('');
-    setCustomItemPrice('0');
+    setCustomItemPrice('0,00');
     setCustomItemQuantity(1);
     setShowCustomItem(false);
   };
@@ -359,7 +365,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
 
   const saveValue = () => {
     if (editValue) {
-      updateDeal(deal.id, { value: Number(editValue) });
+      updateDeal(deal.id, { value: parseCurrencyInput(editValue) });
       setIsEditingValue(false);
     }
   };
@@ -387,70 +393,90 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
           : 'bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200'
       }
     >
-          {/* HEADER (Stage Bar + Won/Lost) */}
-          <div className="bg-slate-50 dark:bg-black/20 border-b border-slate-200 dark:border-white/10 p-6 shrink-0">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex-1 mr-8">
-                {isEditingTitle ? (
-                  <div className="flex gap-2 mb-1">
-                    <input
-                      autoFocus
-                      type="text"
-                      className="text-2xl font-bold text-slate-900 dark:text-white bg-white dark:bg-black/20 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 w-full outline-none focus:ring-2 focus:ring-primary-500"
-                      value={editTitle}
-                      onChange={e => setEditTitle(e.target.value)}
-                      onBlur={saveTitle}
-                      onKeyDown={e => e.key === 'Enter' && saveTitle()}
-                    />
-                    <button onClick={saveTitle} className="text-green-500 hover:text-green-400">
-                      <Check size={24} />
-                    </button>
-                  </div>
-                ) : (
-                  <h2
-                    id={headingId}
-                    onClick={() => {
-                      setEditTitle(deal.title);
-                      setIsEditingTitle(true);
-                    }}
-                    className="text-2xl font-bold text-slate-900 dark:text-white font-display leading-tight cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 flex items-center gap-2 group transition-colors"
-                    title="Clique para editar"
-                  >
-                    {deal.title}
-                    <Pencil size={16} className="opacity-0 group-hover:opacity-50 text-slate-400" />
-                  </h2>
-                )}
+          {/* HEADER */}
+          <div className="relative border-b border-slate-200 dark:border-white/5 px-6 pt-5 pb-4 shrink-0">
+            {/* Close & Delete — absolute top right */}
+            <div className="absolute top-4 right-4 flex items-center gap-1">
+              <button
+                onClick={() => setDeleteId(deal.id)}
+                className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                title="Excluir Negócio"
+              >
+                <Trash2 size={18} />
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
-                {isEditingValue ? (
-                  <div className="flex gap-2 items-center">
-                    <span className="text-lg font-mono font-bold text-slate-500">$</span>
-                    <input
-                      autoFocus
-                      type="number"
-                      className="text-lg font-mono font-bold text-primary-600 dark:text-primary-400 bg-white dark:bg-black/20 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 w-32 outline-none focus:ring-2 focus:ring-primary-500"
-                      value={editValue}
-                      onChange={e => setEditValue(e.target.value)}
-                      onBlur={saveValue}
-                      onKeyDown={e => e.key === 'Enter' && saveValue()}
-                    />
-                    <button onClick={saveValue} className="text-green-500 hover:text-green-400">
-                      <Check size={20} />
-                    </button>
-                  </div>
-                ) : (
-                  <p
-                    onClick={() => {
-                      setEditValue(deal.value.toString());
-                      setIsEditingValue(true);
-                    }}
-                    className="text-lg text-primary-600 dark:text-primary-400 font-mono font-bold cursor-pointer hover:underline decoration-dashed underline-offset-4"
-                    title="Clique para editar valor"
-                  >
-                    ${deal.value.toLocaleString()}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-3 items-center">
+            <div className="flex flex-col gap-1 mb-5 pr-20">
+              {isEditingTitle ? (
+                <div className="flex gap-2">
+                  <input
+                    autoFocus
+                    type="text"
+                    className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white bg-white dark:bg-black/20 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 w-full outline-none focus:ring-2 focus:ring-primary-500 font-display"
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    onBlur={saveTitle}
+                    onKeyDown={e => e.key === 'Enter' && saveTitle()}
+                  />
+                  <button onClick={saveTitle} className="text-green-500 hover:text-green-400 shrink-0">
+                    <Check size={22} />
+                  </button>
+                </div>
+              ) : (
+                <h2
+                  id={headingId}
+                  onClick={() => {
+                    setEditTitle(deal.title);
+                    setIsEditingTitle(true);
+                  }}
+                  className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-display leading-tight cursor-pointer hover:text-primary-500 dark:hover:text-primary-400 flex items-center gap-2 group transition-colors"
+                  title="Clique para editar"
+                >
+                  {deal.title}
+                  <Pencil size={14} className="opacity-0 group-hover:opacity-50 text-slate-400" />
+                </h2>
+              )}
+
+              {/* Value inline */}
+              {isEditingValue ? (
+                <div className="flex gap-2 items-center">
+                  <span className="text-sm font-mono font-bold text-slate-500">R$</span>
+                  <input
+                    autoFocus
+                    type="text"
+                    inputMode="numeric"
+                    className="text-sm font-mono font-bold text-primary-600 dark:text-primary-400 bg-white dark:bg-black/20 border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 w-28 outline-none focus:ring-2 focus:ring-primary-500"
+                    value={editValue}
+                    onChange={e => setEditValue(formatInputCurrency(e.target.value))}
+                    onBlur={saveValue}
+                    onKeyDown={e => e.key === 'Enter' && saveValue()}
+                  />
+                  <button onClick={saveValue} className="text-green-500 hover:text-green-400">
+                    <Check size={16} />
+                  </button>
+                </div>
+              ) : (
+                <p
+                  onClick={() => {
+                    setEditValue(formatInputCurrency(String(deal.value * 100)));
+                    setIsEditingValue(true);
+                  }}
+                  className="text-sm text-primary-600 dark:text-primary-400 font-mono font-bold cursor-pointer hover:underline decoration-dashed underline-offset-4 w-fit"
+                  title="Clique para editar valor"
+                >
+                  {formatCurrencyBRL(deal.value)}
+                </p>
+              )}
+            </div>
+
+            {/* Status buttons */}
+            <div className="flex gap-2 items-center mb-5">
                 {/* Se fechado: mostra badge + botão Reabrir */}
                 {(deal.isWon || deal.isLost) ? (
                   <>
@@ -540,20 +566,6 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                     </button>
                   </>
                 )}
-                <button
-                  onClick={() => setDeleteId(deal.id)}
-                  className="ml-2 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                  title="Excluir Negócio"
-                >
-                  <Trash2 size={24} />
-                </button>
-                <button
-                  onClick={onClose}
-                  className="ml-2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-                >
-                  <X size={24} />
-                </button>
-              </div>
             </div>
 
             {dealBoard ? (
@@ -588,86 +600,96 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
           </div>
 
           <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
-            {/* Left Sidebar (Static Info + Custom Fields) */}
-            <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-dark-card max-h-[38vh] md:max-h-none">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                    <Building2 size={14} /> Empresa (Conta)
-                  </h3>
-                  <p className="text-slate-900 dark:text-white font-medium">{deal.companyName}</p>
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                    <User size={14} /> Contato Principal
-                  </h3>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
-                      {(deal.contactName || '?').charAt(0)}
+            {/* Left Sidebar */}
+            <div className="w-full md:w-[320px] md:min-w-[320px] border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/5 p-5 overflow-y-auto max-h-[38vh] md:max-h-none">
+              <div className="space-y-5">
+                {/* Contact Card — hero element */}
+                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 border border-slate-100 dark:border-white/5">
+                  <div className="flex flex-col items-center text-center mb-3">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-xl font-bold text-white ring-4 ring-primary-500/20 dark:ring-primary-400/10 mb-3 shadow-lg">
+                      {(deal.contactName || '?').charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <p className="text-slate-900 dark:text-white font-medium text-sm flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap justify-center">
+                      <span className="font-semibold text-slate-900 dark:text-white text-base">
                         {deal.contactName || 'Sem contato'}
-                        {contact?.stage &&
-                          (() => {
-                            const stage = lifecycleStageById.get(contact.stage);
-                            if (!stage) return null;
-
-                            // Extract base color name (e.g. 'blue' from 'bg-blue-500')
-                            const colorClass = stage.color; // e.g. bg-blue-500
-                            // We need to construct text and ring classes dynamically or just use inline styles/safe list
-                            // For now, let's just use the background color provided and white text
-
-                            return (
-                              <span
-                                className={`text-[10px] font-black px-2 py-0.5 rounded shadow-sm uppercase tracking-wider flex items-center gap-1 text-white ${colorClass}`}
-                              >
-                                {stage.name}
-                              </span>
-                            );
-                          })()}
-                      </p>
-                      <p className="text-slate-500 text-xs">{deal.contactEmail}</p>
+                      </span>
+                      {contact?.stage &&
+                        (() => {
+                          const stage = lifecycleStageById.get(contact.stage);
+                          if (!stage) return null;
+                          const colorClass = stage.color;
+                          return (
+                            <span
+                              className={`text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider text-white ${colorClass}`}
+                            >
+                              {stage.name}
+                            </span>
+                          );
+                        })()}
                     </div>
+                    {deal.contactEmail && (
+                      <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">{deal.contactEmail}</span>
+                    )}
+                    {deal.companyName && deal.companyName !== 'Sem empresa' && (
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center gap-1">
+                        <Building2 size={10} /> {deal.companyName}
+                      </span>
+                    )}
+                  </div>
+
+                  <ContactActions
+                    phone={contact?.phone}
+                    email={contact?.email}
+                    contactName={contact?.name}
+                    size="md"
+                    className="justify-center"
+                  />
+                </div>
+
+                {/* Details */}
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Detalhes</h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Signal size={12} className="text-slate-400" />
+                      <span className="text-xs text-slate-500">Prioridade</span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-900 dark:text-white text-right">
+                      {formatPriorityPtBr(deal.priority)}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <Calendar size={12} className="text-slate-400" />
+                      <span className="text-xs text-slate-500">Criado em</span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-900 dark:text-white text-right">
+                      {PT_BR_DATE_FORMATTER.format(new Date(deal.createdAt))}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <Percent size={12} className="text-slate-400" />
+                      <span className="text-xs text-slate-500">Probabilidade</span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-900 dark:text-white text-right">
+                      {deal.probability}%
+                    </span>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Detalhes</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Prioridade</span>
-                      <span className="text-slate-900 dark:text-white">
-                        {formatPriorityPtBr(deal.priority)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Criado em</span>
-                      <span className="text-slate-900 dark:text-white">
-                        {PT_BR_DATE_FORMATTER.format(new Date(deal.createdAt))}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-500">Probabilidade</span>
-                      <span className="text-slate-900 dark:text-white">{deal.probability}%</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* TAGS */}
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
-                    <TagIcon size={14} /> Tags
+                {/* Tags */}
+                <div>
+                  <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                    <TagIcon size={12} /> Tags
                   </h3>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 mb-2.5">
                     {(deal.tags || []).length === 0 ? (
                       <p className="text-xs text-slate-500 italic">Sem tags.</p>
                     ) : (
                       (deal.tags || []).map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10"
+                          className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-500/10 text-primary-700 dark:text-primary-300 border border-primary-200/60 dark:border-primary-500/20"
                         >
                           {tag}
                           <button
@@ -684,58 +706,53 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                     )}
                   </div>
 
-                  <div className="mt-3">
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
-                      Adicionar tag
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={tagQuery}
-                        onChange={(e) => setTagQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addDealTag(tagQuery);
-                          }
-                        }}
-                        placeholder="Ex: VIP, Urgente, Q4..."
-                        className="min-w-0 flex-1 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
-                        aria-label="Adicionar tag"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => addDealTag(tagQuery)}
-                        disabled={!normalizeTag(tagQuery)}
-                        className="shrink-0 h-10 w-10 inline-flex items-center justify-center rounded-lg bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
-                        aria-label="Adicionar tag"
-                        title="Adicionar tag"
-                      >
-                        <Plus size={18} aria-hidden="true" />
-                      </button>
-                    </div>
-
-                    {(normalizeTag(tagQuery) && tagSuggestions.length > 0) && (
-                      <div className="mt-2 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
-                        {tagSuggestions.map((t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => addDealTag(t)}
-                            className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                          >
-                            {t}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text"
+                      value={tagQuery}
+                      onChange={(e) => setTagQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addDealTag(tagQuery);
+                        }
+                      }}
+                      placeholder="Ex: VIP, Urgente, Q4..."
+                      className="min-w-0 flex-1 bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+                      aria-label="Adicionar tag"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addDealTag(tagQuery)}
+                      disabled={!normalizeTag(tagQuery)}
+                      className="shrink-0 h-10 w-10 inline-flex items-center justify-center rounded-lg bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+                      aria-label="Adicionar tag"
+                      title="Adicionar tag"
+                    >
+                      <Plus size={18} aria-hidden="true" />
+                    </button>
                   </div>
+
+                  {(normalizeTag(tagQuery) && tagSuggestions.length > 0) && (
+                    <div className="mt-2 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden">
+                      {tagSuggestions.map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => addDealTag(t)}
+                          className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* DYNAMIC CUSTOM FIELDS INPUTS */}
                 {customFieldDefinitions.length > 0 && (
                   <div className="pt-4 border-t border-slate-100 dark:border-white/5">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-3">
+                    <h3 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
                       Campos Personalizados
                     </h3>
                     <div className="space-y-4">
@@ -776,24 +793,24 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
             {/* Right Content (Tabs & Timeline) */}
             <div className="flex-1 min-h-0 flex flex-col bg-white dark:bg-dark-card">
               <div className="h-14 border-b border-slate-200 dark:border-white/5 flex items-center px-6 shrink-0">
-                <div className="flex gap-6">
+                <div className="flex gap-1">
                   <button
                     onClick={() => setActiveTab('timeline')}
-                    className={`text-sm font-bold h-14 border-b-2 transition-colors ${activeTab === 'timeline' ? 'border-primary-500 text-primary-600 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
+                    className={`text-sm font-bold px-4 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === 'timeline' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-white'}`}
                   >
-                    Timeline
+                    <Clock size={15} /> Timeline
                   </button>
                   <button
                     onClick={() => setActiveTab('products')}
-                    className={`text-sm font-bold h-14 border-b-2 transition-colors ${activeTab === 'products' ? 'border-primary-500 text-primary-600 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
+                    className={`text-sm font-bold px-4 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === 'products' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-white'}`}
                   >
-                    Produtos
+                    <Package size={15} /> Produtos
                   </button>
                   <button
                     onClick={() => setActiveTab('info')}
-                    className={`text-sm font-bold h-14 border-b-2 transition-colors ${activeTab === 'info' ? 'border-primary-500 text-primary-600 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
+                    className={`text-sm font-bold px-4 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${activeTab === 'info' ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-white'}`}
                   >
-                    IA Insights
+                    <BrainCircuit size={15} /> IA Insights
                   </button>
                 </div>
               </div>
@@ -816,7 +833,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                           disabled={!newNote.trim()}
                           className="bg-primary-600 hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all"
                         >
-                          <Check size={14} /> Enviar
+                          <Send size={14} /> Enviar
                         </button>
                       </div>
                     </div>
@@ -860,7 +877,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                           <option value="">Selecione um item...</option>
                           {products.map(p => (
                             <option key={p.id} value={p.id}>
-                              {p.name} - ${p.price}
+                              {p.name} - R$ {p.price}
                             </option>
                           ))}
                         </select>
@@ -909,8 +926,8 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                               <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Preço</label>
                               <input
                                 value={customItemPrice}
-                                onChange={e => setCustomItemPrice(e.target.value)}
-                                inputMode="decimal"
+                                onChange={e => setCustomItemPrice(formatInputCurrency(e.target.value))}
+                                inputMode="numeric"
                                 className="w-full bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
                               />
                             </div>
@@ -966,10 +983,10 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                                   {item.quantity}
                                 </td>
                                 <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300">
-                                  ${item.price.toLocaleString()}
+                                  {formatCurrencyBRL(item.price)}
                                 </td>
                                 <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
-                                  ${(item.price * item.quantity).toLocaleString()}
+                                  {formatCurrencyBRL(item.price * item.quantity)}
                                 </td>
                                 <td className="px-4 py-3 text-center">
                                   <button
@@ -992,7 +1009,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                               Total do Pedido
                             </td>
                             <td className="px-4 py-3 text-right font-bold text-primary-600 dark:text-primary-400 text-lg">
-                              ${deal.value.toLocaleString()}
+                              {formatCurrencyBRL(deal.value)}
                             </td>
                             <td></td>
                           </tr>

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Phone, Users, Mail, CheckSquare } from 'lucide-react';
 import { Activity, Deal } from '@/types';
 
@@ -7,6 +7,7 @@ interface ActivitiesCalendarProps {
     deals: Deal[];
     currentDate: Date;
     setCurrentDate: (date: Date) => void;
+    onReschedule?: (activityId: string, newDate: string) => void;
 }
 
 const HOURS = Array.from({ length: 10 }, (_, i) => i + 9); // 9:00 to 18:00
@@ -32,8 +33,10 @@ export const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({
     activities,
     deals,
     currentDate,
-    setCurrentDate
+    setCurrentDate,
+    onReschedule
 }) => {
+    const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
     const getWeekStart = (date: Date) => {
         const d = new Date(date);
         const day = d.getDay();
@@ -182,12 +185,28 @@ export const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({
                                         className={`min-h-[70px] p-2 border-l border-slate-200 dark:border-white/10 transition-colors ${isToday(date)
                                                 ? 'bg-primary-50/20 dark:bg-primary-500/5'
                                                 : ''
-                                            }`}
+                                            } ${dragOverSlot === key ? 'ring-2 ring-primary-400 ring-inset bg-primary-50 dark:bg-primary-500/10' : ''}`}
+                                        onDragOver={onReschedule ? (e) => { e.preventDefault(); setDragOverSlot(key); } : undefined}
+                                        onDragLeave={onReschedule ? () => setDragOverSlot(null) : undefined}
+                                        onDrop={onReschedule ? (e) => {
+                                            e.preventDefault();
+                                            setDragOverSlot(null);
+                                            const activityId = e.dataTransfer.getData('text/activity-id');
+                                            if (!activityId) return;
+                                            const newDate = new Date(date);
+                                            newDate.setHours(hour, 0, 0, 0);
+                                            onReschedule(activityId, newDate.toISOString());
+                                        } : undefined}
                                     >
                                         <div className="space-y-2">
                                             {hourActivities.map(activity => (
                                                 <div
                                                     key={activity.id}
+                                                    draggable={!!onReschedule}
+                                                    onDragStart={onReschedule ? (e) => {
+                                                        e.dataTransfer.setData('text/activity-id', activity.id);
+                                                        e.dataTransfer.effectAllowed = 'move';
+                                                    } : undefined}
                                                     className={`
                                                         group relative
                                                         text-xs p-3 rounded-xl border-2

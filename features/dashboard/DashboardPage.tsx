@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCRM } from '@/context/CRMContext';
 import { useToast } from '@/context/ToastContext';
+import { formatCurrencyBRL } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Users, DollarSign, Target, Clock, MoreVertical, AlertTriangle } from 'lucide-react';
 import { StatCard } from './components/StatCard';
 import { ActivityFeedItem } from './components/ActivityFeedItem';
@@ -110,7 +111,7 @@ const DashboardPage: React.FC = () => {
             value={selectedBoardId}
             onChange={(e) => setSelectedBoardId(e.target.value)}
             aria-label="Selecionar Pipeline de Vendas"
-            className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {boards.map(board => (
               <option key={board.id} value={board.id}>{board.name}</option>
@@ -123,7 +124,7 @@ const DashboardPage: React.FC = () => {
             onClick={() => setShowPipelineAlerts(true)}
             className={`p-2 rounded-lg border transition-colors relative ${(riskyCount > 0 || stagnantDealsCount > 0)
               ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/30 text-amber-600 dark:text-amber-400'
-              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'
+              : 'bg-white dark:bg-dark-card border-slate-200 dark:border-white/10 text-slate-500 hover:text-slate-700'
               }`}
             title="Alertas de Pipeline"
           >
@@ -142,7 +143,7 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
         <StatCard
           title="Pipeline Total"
-          value={`$${pipelineValue.toLocaleString()}`}
+          value={formatCurrencyBRL(pipelineValue)}
           subtext={pipelineChangeInfo.text}
           subtextPositive={pipelineChangeInfo.isPositive}
           icon={DollarSign}
@@ -172,7 +173,7 @@ const DashboardPage: React.FC = () => {
         />
         <StatCard
           title="Receita (Ganha)"
-          value={`$${wonRevenue.toLocaleString()}`}
+          value={formatCurrencyBRL(wonRevenue)}
           subtext={revenueChangeInfo.text}
           subtextPositive={revenueChangeInfo.isPositive}
           icon={TrendingUp}
@@ -254,7 +255,7 @@ const DashboardPage: React.FC = () => {
               Sem mudança de estágio há +10 dias.
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              ${stagnantDealsValue.toLocaleString()} em risco
+              {formatCurrencyBRL(stagnantDealsValue)} em risco
             </p>
           </div>
 

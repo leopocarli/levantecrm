@@ -22,6 +22,7 @@ import { useBoards } from '@/lib/query/hooks/useBoardsQuery';
 import { useRealtimeSync } from '@/lib/realtime/useRealtimeSync';
 import { normalizePhoneE164 } from '@/lib/phone';
 import { generateFakeContacts } from '@/lib/debug';
+import { stripAccents } from '@/lib/utils';
 
 /**
  * Hook React `useContactsController` que encapsula uma lógica reutilizável.
@@ -601,8 +602,8 @@ export const useContactsController = () => {
   const filteredCompanies = useMemo(() => {
     return companies.filter(
       c =>
-        (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
-        (c.industry || '').toLowerCase().includes(search.toLowerCase())
+        stripAccents((c.name || '').toLowerCase()).includes(stripAccents(search.toLowerCase())) ||
+        stripAccents((c.industry || '').toLowerCase()).includes(stripAccents(search.toLowerCase()))
     );
   }, [companies, search]);
 

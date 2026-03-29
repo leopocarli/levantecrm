@@ -46,12 +46,19 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-dark-bg relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] bg-primary-500/20 rounded-full blur-[120px]" />
-                <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[100px]" />
+                <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] bg-primary-500/15 rounded-full blur-[120px]" />
+                <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] bg-primary-400/10 rounded-full blur-[100px]" />
             </div>
 
             <div className="max-w-md w-full relative z-10 px-4">
                 <div className="text-center mb-8">
+                    <div className="flex justify-center mb-4">
+                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="10" y="60" width="20" height="30" rx="4" fill="#F5650A" opacity=".38" />
+                            <rect x="40" y="35" width="20" height="55" rx="4" fill="#F5650A" opacity=".68" />
+                            <rect x="70" y="10" width="20" height="80" rx="4" fill="#F5650A" />
+                        </svg>
+                    </div>
                     <h1 className="text-4xl font-bold text-slate-900 dark:text-white font-display tracking-tight mb-2">
                         Bem-vindo de volta
                     </h1>
@@ -78,7 +85,7 @@ export default function LoginPage() {
                                     required
                                     aria-required="true"
                                     aria-describedby={error ? "login-error" : undefined}
-                                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all sm:text-sm"
+                                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/[0.03] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all sm:text-sm"
                                     placeholder="seu@email.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -102,7 +109,7 @@ export default function LoginPage() {
                                     required
                                     aria-required="true"
                                     aria-describedby={error ? "login-error" : undefined}
-                                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all sm:text-sm"
+                                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-white/10 rounded-xl bg-slate-50 dark:bg-white/[0.03] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all sm:text-sm"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}

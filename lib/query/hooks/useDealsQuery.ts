@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys, DEALS_VIEW_KEY } from '../index';
 import { dealsService, contactsService, companiesService, boardStagesService } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
+import { stripAccents } from '@/lib/utils';
 import type { Deal, DealView, DealItem } from '@/types';
 
 // ============ QUERY HOOKS ============
@@ -49,8 +50,8 @@ export const useDeals = (filters?: DealsFilters) => {
           if (filters.minValue && deal.value < filters.minValue) return false;
           if (filters.maxValue && deal.value > filters.maxValue) return false;
           if (filters.search) {
-            const search = filters.search.toLowerCase();
-            if (!(deal.title || '').toLowerCase().includes(search)) return false;
+            const search = stripAccents(filters.search.toLowerCase());
+            if (!stripAccents((deal.title || '').toLowerCase()).includes(search)) return false;
           }
           return true;
         });
@@ -113,6 +114,7 @@ export const useDealsView = (filters?: DealsFilters) => {
           companyName: company?.name || 'Sem empresa',
           contactName: contact?.name || 'Sem contato',
           contactEmail: contact?.email || '',
+          contactPhone: contact?.phone || '',
           stageLabel: stageMap.get(deal.status) || 'Estágio não identificado',
         };
       });
@@ -125,10 +127,10 @@ export const useDealsView = (filters?: DealsFilters) => {
           if (filters.minValue && deal.value < filters.minValue) return false;
           if (filters.maxValue && deal.value > filters.maxValue) return false;
           if (filters.search) {
-            const search = filters.search.toLowerCase();
+            const search = stripAccents(filters.search.toLowerCase());
             if (
-              !(deal.title || '').toLowerCase().includes(search) &&
-              !(deal.companyName || '').toLowerCase().includes(search)
+              !stripAccents((deal.title || '').toLowerCase()).includes(search) &&
+              !stripAccents((deal.companyName || '').toLowerCase()).includes(search)
             )
               return false;
           }
@@ -211,6 +213,7 @@ export const useDealsByBoard = (boardId: string) => {
           companyName: company?.name || 'Sem empresa',
           contactName: contact?.name || 'Sem contato',
           contactEmail: contact?.email || '',
+          contactPhone: contact?.phone || '',
           stageLabel: stageMap.get(deal.status) || 'Estágio não identificado',
         };
       });
@@ -251,26 +254,10 @@ export const useCreateDeal = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      // #region agent log
-      if (process.env.NODE_ENV !== 'production') {
-        const logData = { title: deal.title, status: deal.status?.slice(0, 8) || 'null' };
-        console.log(`[useCreateDeal] 📤 Sending create to server`, logData);
-        fetch('http://127.0.0.1:7242/ingest/d70f541c-09d7-4128-9745-93f15f184017',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useDealsQuery.ts:230',message:'Sending create to server',data:logData,timestamp:Date.now(),sessionId:'debug-session',runId:'create-deal',hypothesisId:'CD1'})}).catch(()=>{});
-      }
-      // #endregion
-
       // Passa null ao invés de '' - o trigger vai preencher automaticamente
       const { data, error } = await dealsService.create(fullDeal);
 
       if (error) throw error;
-      
-      // #region agent log
-      if (process.env.NODE_ENV !== 'production') {
-        const logData = { dealId: data?.id?.slice(0, 8) || 'null', title: data?.title };
-        console.log(`[useCreateDeal] ✅ Server confirmed creation`, logData);
-        fetch('http://127.0.0.1:7242/ingest/d70f541c-09d7-4128-9745-93f15f184017',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useDealsQuery.ts:240',message:'Server confirmed creation',data:logData,timestamp:Date.now(),sessionId:'debug-session',runId:'create-deal',hypothesisId:'CD2'})}).catch(()=>{});
-      }
-      // #endregion
       
       return data!;
     },
@@ -297,14 +284,6 @@ export const useCreateDeal = () => {
         stageLabel: '',
       } as DealView;
 
-      // #region agent log
-      if (process.env.NODE_ENV !== 'production') {
-        const logData = { tempId: tempId.slice(0, 15), title: newDeal.title, status: newDeal.status?.slice(0, 8) || 'null' };
-        console.log(`[useCreateDeal] 🔄 Optimistic insert with temp ID`, logData);
-        fetch('http://127.0.0.1:7242/ingest/d70f541c-09d7-4128-9745-93f15f184017',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useDealsQuery.ts:260',message:'Optimistic insert with temp ID',data:logData,timestamp:Date.now(),sessionId:'debug-session',runId:'create-deal',hypothesisId:'CD3'})}).catch(()=>{});
-      }
-      // #endregion
-
       queryClient.setQueryData<DealView[]>(DEALS_VIEW_KEY, (old = []) => [tempDealView, ...old]);
 
       return { previousDeals, tempId };
@@ -313,14 +292,6 @@ export const useCreateDeal = () => {
       // Replace temp deal with real one from server
       // This ensures immediate UI update while Realtime syncs in background
       const tempId = context?.tempId;
-      
-      // #region agent log
-      if (process.env.NODE_ENV !== 'production') {
-        const logData = { tempId: tempId?.slice(0, 15) || 'null', realId: data.id?.slice(0, 8) || 'null', title: data.title };
-        console.log(`[useCreateDeal] 🔄 Replacing temp deal with real one`, logData);
-        fetch('http://127.0.0.1:7242/ingest/d70f541c-09d7-4128-9745-93f15f184017',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useDealsQuery.ts:280',message:'Replacing temp deal with real one',data:logData,timestamp:Date.now(),sessionId:'debug-session',runId:'create-deal',hypothesisId:'CD4'})}).catch(()=>{});
-      }
-      // #endregion
       
       // Usa DEALS_VIEW_KEY - a única fonte de verdade
       // Converte Deal para DealView parcial (Realtime vai enriquecer depois)
@@ -339,25 +310,12 @@ export const useCreateDeal = () => {
         // Check if deal already exists (race condition: Realtime may have already added it)
         const existingIndex = old.findIndex(d => d.id === data.id);
         if (existingIndex !== -1) {
-          // Deal already exists (Realtime beat us), keep the existing one (it has enriched data)
-          // #region agent log
-          if (process.env.NODE_ENV !== 'production') {
-            console.log(`[useCreateDeal] ⚠️ Deal already exists in cache (Realtime beat us)`, { dealId: data.id?.slice(0, 8) });
-            fetch('http://127.0.0.1:7242/ingest/d70f541c-09d7-4128-9745-93f15f184017',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useDealsQuery.ts:290',message:'Deal already exists in cache',data:{dealId:data.id?.slice(0,8)},timestamp:Date.now(),sessionId:'debug-session',runId:'create-deal',hypothesisId:'CD5'})}).catch(()=>{});
-          }
-          // #endregion
           return old; // Não sobrescreve - Realtime já tem dados enriquecidos
         }
         
         if (tempId) {
           // Remove temp deal, add real one
           const withoutTemp = old.filter(d => d.id !== tempId);
-          // #region agent log
-          if (process.env.NODE_ENV !== 'production') {
-            console.log(`[useCreateDeal] ✅ Swapped temp for real deal`, { tempId: tempId.slice(0, 15), realId: data.id?.slice(0, 8), cacheSize: withoutTemp.length + 1 });
-            fetch('http://127.0.0.1:7242/ingest/d70f541c-09d7-4128-9745-93f15f184017',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useDealsQuery.ts:300',message:'Swapped temp for real deal',data:{tempId:tempId.slice(0,15),realId:data.id?.slice(0,8),cacheSize:withoutTemp.length+1},timestamp:Date.now(),sessionId:'debug-session',runId:'create-deal',hypothesisId:'CD6'})}).catch(()=>{});
-          }
-          // #endregion
           return [dealAsView, ...withoutTemp];
         }
         

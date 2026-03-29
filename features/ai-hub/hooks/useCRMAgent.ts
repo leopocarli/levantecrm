@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useCRM } from '@/context/CRMContext';
 import { useSettings } from '@/context/settings/SettingsContext';
 import { getModel } from '@/lib/ai/config';
+import { stripAccents } from '@/lib/utils';
 import { Activity, Deal } from '@/types';
 
 export interface AgentMessage {
@@ -71,10 +72,10 @@ export function useCRMAgent(options: UseCRMAgentOptions = {}) {
       let filtered = [...deals];
 
       if (query) {
-        const q = query.toLowerCase();
+        const q = stripAccents(query.toLowerCase());
         filtered = filtered.filter(d =>
-          (d.title || '').toLowerCase().includes(q) ||
-          (d.companyName || '').toLowerCase().includes(q)
+          stripAccents((d.title || '').toLowerCase()).includes(q) ||
+          stripAccents((d.companyName || '').toLowerCase()).includes(q)
         );
       }
       if (status) {
@@ -104,10 +105,10 @@ export function useCRMAgent(options: UseCRMAgentOptions = {}) {
     },
 
     getContact: async ({ query }: { query: string }) => {
-      const q = query.toLowerCase();
+      const q = stripAccents(query.toLowerCase());
       const found = contacts.find(c =>
-        (c.name || '').toLowerCase().includes(q) ||
-        (c.email || '').toLowerCase().includes(q)
+        stripAccents((c.name || '').toLowerCase()).includes(q) ||
+        stripAccents((c.email || '').toLowerCase()).includes(q)
       );
 
       if (!found) {
@@ -290,7 +291,8 @@ export function useCRMAgent(options: UseCRMAgentOptions = {}) {
 
       return {
         success: true,
-        message: `Valor do deal "${deal.title}" atualizado de R$${oldValue.toLocaleString()} para R$${newValue.toLocaleString()}`,
+        message: `Valor do deal "${deal.title}" atualizado de R$ ${oldValue.toLocaleString('pt-BR')} para R$ ${newValue.toLocaleString('pt-BR')}`,
+
       };
     },
 
@@ -307,7 +309,7 @@ export function useCRMAgent(options: UseCRMAgentOptions = {}) {
 
       if (contactName) {
         const found = contacts.find(c =>
-          (c.name || '').toLowerCase().includes(contactName.toLowerCase())
+          stripAccents((c.name || '').toLowerCase()).includes(stripAccents(contactName.toLowerCase()))
         );
         if (found) {
           contactId = found.id;
@@ -338,7 +340,8 @@ export function useCRMAgent(options: UseCRMAgentOptions = {}) {
 
       return {
         success: true,
-        message: `Deal "${title}" criado com valor de R$${value.toLocaleString()}`,
+        message: `Deal "${title}" criado com valor de R$ ${value.toLocaleString('pt-BR')}`,
+
         deal: { id: newDeal.id, title, value, status: newDeal.status },
       };
     },

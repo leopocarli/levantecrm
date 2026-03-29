@@ -83,8 +83,8 @@ export const StatCard: React.FC<StatCardProps> = ({
 
             <div className="flex justify-between items-start relative z-10">
                 <div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1 font-display">{title}</p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white font-display tracking-tight">{value}</p>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">{value}</p>
                 </div>
                 <div
                     className="p-3 rounded-xl ring-1 ring-inset ring-white/10"

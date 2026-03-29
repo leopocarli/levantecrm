@@ -12,6 +12,7 @@ import {
 import { useDeals } from '@/lib/query/hooks/useDealsQuery';
 import { useContacts, useCompanies } from '@/lib/query/hooks/useContactsQuery';
 import { useRealtimeSync } from '@/lib/realtime/useRealtimeSync';
+import { stripAccents } from '@/lib/utils';
 
 /**
  * Hook React `useActivitiesController` que encapsula uma lógica reutilizável.
@@ -86,12 +87,12 @@ export const useActivitiesController = () => {
 
   const filteredActivities = useMemo(() => {
     const { todayTs, tomorrowTs } = dateBoundaries;
-    const q = searchTerm.toLowerCase();
+    const q = stripAccents(searchTerm.toLowerCase());
 
     return activities
       .map((activity) => ({ activity, ts: Date.parse(activity.date) }))
       .filter(({ activity, ts }) => {
-        const matchesSearch = (activity.title || '').toLowerCase().includes(q);
+        const matchesSearch = stripAccents((activity.title || '').toLowerCase()).includes(q);
         const matchesType = filterType === 'ALL' || activity.type === filterType;
         const isPending = !activity.completed;
 

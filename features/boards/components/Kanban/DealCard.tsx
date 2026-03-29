@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { DealView } from '@/types';
 import { Building2, Hourglass, Trophy, XCircle } from 'lucide-react';
+import { ContactActions } from '@/components/ui/ContactActions';
 import { ActivityStatusIcon } from './ActivityStatusIcon';
+import { formatCurrencyBRL } from '@/lib/utils';
 import { priorityAriaLabelPtBr } from '@/lib/utils/priority';
 
 interface DealCardProps {
@@ -140,7 +142,7 @@ const DealCardComponent: React.FC<DealCardProps> = ({
     // Main content
     parts.push(deal.title);
     if (deal.companyName) parts.push(deal.companyName);
-    parts.push(`$${deal.value.toLocaleString()}`);
+    parts.push(formatCurrencyBRL(deal.value));
 
     // Additional context
     const priority = getPriorityLabel(deal.priority);
@@ -232,9 +234,17 @@ const DealCardComponent: React.FC<DealCardProps> = ({
       >
         {deal.title}
       </h4>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1">
+      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
         <Building2 size={10} aria-hidden="true" /> {deal.companyName}
       </p>
+      <div className="mb-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <ContactActions
+          phone={deal.contactPhone}
+          email={deal.contactEmail}
+          contactName={deal.contactName}
+          size="sm"
+        />
+      </div>
 
       <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-white/5">
         <div className="flex items-center gap-2">
@@ -259,7 +269,7 @@ const DealCardComponent: React.FC<DealCardProps> = ({
             )
           )}
           <span className="text-sm font-bold text-slate-700 dark:text-slate-200 font-mono">
-            ${deal.value.toLocaleString()}
+            {formatCurrencyBRL(deal.value)}
           </span>
         </div>
 

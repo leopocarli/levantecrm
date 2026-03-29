@@ -1,13 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from '@/context/ToastContext';
 import { CustomFieldDefinition, CustomFieldType } from '@/types';
 import { usePersistedState } from '@/hooks/usePersistedState';
 
-// TODO: Migrate customFieldDefinitions and tags to Supabase
-// For now, using local state as placeholder
 /**
  * Hook React `useSettingsController` que encapsula uma lógica reutilizável.
- * @returns {{ defaultRoute: string; setDefaultRoute: Dispatch<SetStateAction<string>>; customFieldDefinitions: CustomFieldDefinition[]; newFieldLabel: string; ... 14 more ...; removeTag: (tag: string) => void; }} Retorna um valor do tipo `{ defaultRoute: string; setDefaultRoute: Dispatch<SetStateAction<string>>; customFieldDefinitions: CustomFieldDefinition[]; newFieldLabel: string; ... 14 more ...; removeTag: (tag: string) => void; }`.
  */
 export const useSettingsController = () => {
   const { addToast } = useToast();
@@ -15,7 +12,7 @@ export const useSettingsController = () => {
   // General Settings
   const [defaultRoute, setDefaultRoute] = usePersistedState<string>('crm_default_route', '/boards');
 
-  // Custom Fields State (local - TODO: migrate to Supabase)
+  // Custom Fields State (synced with Supabase via SettingsContext, local state for form UI)
   const [customFieldDefinitions, setCustomFieldDefinitions] = usePersistedState<
     CustomFieldDefinition[]
   >('crm_custom_fields', []);
@@ -24,7 +21,7 @@ export const useSettingsController = () => {
   const [newFieldOptions, setNewFieldOptions] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Tags State (local - TODO: migrate to Supabase)
+  // Tags State (synced with Supabase via SettingsContext, local state for form UI)
   const [availableTags, setAvailableTags] = usePersistedState<string[]>('crm_tags', []);
   const [newTagName, setNewTagName] = useState('');
 

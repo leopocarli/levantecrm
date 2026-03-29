@@ -257,6 +257,22 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       // Fetch products catalog (active only)
       await refreshProducts();
+
+      // Fetch tags & custom fields from server
+      try {
+        const generalRes = await fetch('/api/settings/general', {
+          method: 'GET',
+          headers: { accept: 'application/json' },
+          credentials: 'include',
+        });
+        if (generalRes.ok) {
+          const generalData = await generalRes.json();
+          if (Array.isArray(generalData.tags)) setAvailableTags(generalData.tags);
+          if (Array.isArray(generalData.customFieldDefinitions)) setCustomFieldDefinitions(generalData.customFieldDefinitions);
+        }
+      } catch {
+        // Fallback: keep current (empty) state – localStorage values will be stale
+      }
     } catch (e) {
       console.error('Error fetching settings:', e);
       setError(e instanceof Error ? e.message : 'Failed to fetch settings');
@@ -496,30 +512,63 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     [updateSettings]
   );
 
-  // Custom Fields (local state for now)
+  // Persist tags/custom fields to server
+  const persistGeneralSettings = useCallback(async (updates: { tags?: string[]; custom_field_definitions?: CustomFieldDefinition[] }) => {
+    try {
+      await fetch('/api/settings/general', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updates),
+      });
+    } catch {
+      // Silent – local state already updated for instant feedback
+    }
+  }, []);
+
+  // Custom Fields (persisted to Supabase)
   const addCustomField = useCallback((field: Omit<CustomFieldDefinition, 'id'>) => {
     const newField = { ...field, id: crypto.randomUUID() };
-    setCustomFieldDefinitions(prev => [...prev, newField]);
-  }, []);
+    setCustomFieldDefinitions(prev => {
+      const next = [...prev, newField];
+      persistGeneralSettings({ custom_field_definitions: next });
+      return next;
+    });
+  }, [persistGeneralSettings]);
 
   const updateCustomField = useCallback((id: string, updates: Partial<CustomFieldDefinition>) => {
-    setCustomFieldDefinitions(prev => prev.map(f => (f.id === id ? { ...f, ...updates } : f)));
-  }, []);
+    setCustomFieldDefinitions(prev => {
+      const next = prev.map(f => (f.id === id ? { ...f, ...updates } : f));
+      persistGeneralSettings({ custom_field_definitions: next });
+      return next;
+    });
+  }, [persistGeneralSettings]);
 
   const removeCustomField = useCallback((id: string) => {
-    setCustomFieldDefinitions(prev => prev.filter(f => f.id !== id));
-  }, []);
+    setCustomFieldDefinitions(prev => {
+      const next = prev.filter(f => f.id !== id);
+      persistGeneralSettings({ custom_field_definitions: next });
+      return next;
+    });
+  }, [persistGeneralSettings]);
 
-  // Tags (local state for now)
+  // Tags (persisted to Supabase)
   const addTag = useCallback((tag: string) => {
-    if (!availableTags.includes(tag)) {
-      setAvailableTags(prev => [...prev, tag]);
-    }
-  }, [availableTags]);
+    setAvailableTags(prev => {
+      if (prev.includes(tag)) return prev;
+      const next = [...prev, tag];
+      persistGeneralSettings({ tags: next });
+      return next;
+    });
+  }, [persistGeneralSettings]);
 
   const removeTag = useCallback((tag: string) => {
-    setAvailableTags(prev => prev.filter(t => t !== tag));
-  }, []);
+    setAvailableTags(prev => {
+      const next = prev.filter(t => t !== tag);
+      persistGeneralSettings({ tags: next });
+      return next;
+    });
+  }, [persistGeneralSettings]);
 
   // Legacy Leads
   const addLead = useCallback((lead: Lead) => {

@@ -504,8 +504,8 @@ export async function cleanupSalesTeamFixtures(fx: SalesTeamFixtureBundle): Prom
     }
   }
 
-  // 2) Contatos: apaga tanto os IDs criados no fixture quanto quaisquer contatos com o runId no email
-  // (ex.: createContact tool cria contatos extras durante o teste).
+  // 2) Contatos: apaga tanto os IDs criados no fixture quanto quaisquer contatos com o runId no email ou nome
+  // (ex.: createContact/createDeal tools criam contatos extras durante o teste).
   if (fx.created.contactIds.length) {
     await supabase.from('contacts').delete().eq('organization_id', fx.organizationId).in('id', fx.created.contactIds);
   }
@@ -515,6 +515,12 @@ export async function cleanupSalesTeamFixtures(fx: SalesTeamFixtureBundle): Prom
       .delete()
       .eq('organization_id', fx.organizationId)
       .ilike('email', `%${fx.runId}%`);
+    // createDeal auto-creates contacts by name (no email), so also match by name
+    await supabase
+      .from('contacts')
+      .delete()
+      .eq('organization_id', fx.organizationId)
+      .ilike('name', `%${fx.runId}%`);
   }
 
   // 3) Stages + boards criados no fixture

@@ -36,6 +36,7 @@ import { MessageComposerModal, type MessageChannel, type MessageExecutedEvent } 
 import { ScheduleModal, type ScheduleData, type ScheduleType } from '@/features/inbox/components/ScheduleModal';
 
 import type { QuickScript, ScriptCategory } from '@/lib/supabase/quickScripts';
+import { stripAccents } from '@/lib/utils';
 import type { Activity, Board, BoardStage, Contact, DealView } from '@/types';
 
 type Tab = 'chat' | 'notas' | 'scripts' | 'arquivos';
@@ -987,8 +988,8 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
       if (!showSystemEvents && t.kind === 'system') return false;
       if (kindFilter !== 'all' && t.kind !== kindFilter) return false;
       if (!query.trim()) return true;
-      const q = query.toLowerCase();
-      return `${t.title} ${t.subtitle ?? ''}`.toLowerCase().includes(q);
+      const q = stripAccents(query.toLowerCase());
+      return stripAccents(`${t.title} ${t.subtitle ?? ''}`.toLowerCase()).includes(q);
     });
   }, [kindFilter, query, showSystemEvents, timelineItems]);
 

@@ -890,7 +890,9 @@ export function createCRMTools(context: CRMCallOptions, userId: string) {
                     // If looking for stage, filter by stage name
                     if (stageName && openFoundDeals) {
                         const filtered = openFoundDeals.filter((d: any) =>
-                            d.stage?.name?.toLowerCase().includes(stageName.toLowerCase())
+                            d.stage?.name?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(
+                                stageName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+                            )
                         );
                         if (filtered.length === 1) {
                             targetDealId = filtered[0].id;

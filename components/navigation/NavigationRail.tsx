@@ -24,13 +24,15 @@ export function NavigationRail({ onOpenMore }: NavigationRailProps) {
         'flex',
         'flex-col justify-between',
         'w-20 shrink-0',
-        'glass border-r border-[var(--color-border-subtle)]'
+        'bg-white dark:bg-[#0D1B2A] border-r border-[var(--color-border-subtle)]'
       )}
     >
       <div className="flex flex-col items-center gap-2 py-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-500/20">
-          N
-        </div>
+        <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="10" y="60" width="20" height="30" rx="4" fill="#F5650A" opacity=".38" />
+          <rect x="40" y="35" width="20" height="55" rx="4" fill="#F5650A" opacity=".68" />
+          <rect x="70" y="10" width="20" height="80" rx="4" fill="#F5650A" />
+        </svg>
       </div>
 
       <div className="flex-1 px-3 py-2 overflow-y-auto scrollbar-custom">
@@ -46,7 +48,7 @@ export function NavigationRail({ onOpenMore }: NavigationRailProps) {
                 className={cn(
                   'w-full h-12 rounded-xl flex items-center justify-center transition-colors focus-visible-ring',
                   isActive
-                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-900/50'
+                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border-l-[3px] border-primary-500'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                 )}
                 aria-current={isActive ? 'page' : undefined}
@@ -72,7 +74,7 @@ export function NavigationRail({ onOpenMore }: NavigationRailProps) {
                 className={cn(
                   'w-full h-12 rounded-xl flex items-center justify-center transition-colors focus-visible-ring',
                   isActive
-                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-900/50'
+                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border-l-[3px] border-primary-500'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                 )}
                 aria-current={isActive ? 'page' : undefined}

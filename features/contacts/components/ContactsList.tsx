@@ -1,5 +1,7 @@
 import React from 'react';
-import { Building2, Mail, Phone, Plus, Calendar, Pencil, Trash2, Globe, MoreHorizontal, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Building2, Plus, Calendar, Pencil, Trash2, Globe, MoreHorizontal, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ContactActions } from '@/components/ui/ContactActions';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Contact, Company, ContactSortableColumn } from '@/types';
 import { StageBadge } from './ContactsStageTabs';
 
@@ -253,14 +255,12 @@ export const ContactsList: React.FC<ContactsListProps> = ({
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-xs">
-                                                <Mail size={12} /> {contact.email || '---'}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-xs">
-                                                <Phone size={12} /> {contact.phone || '---'}
-                                            </div>
-                                        </div>
+                                        <ContactActions
+                                            phone={contact.phone}
+                                            email={contact.email}
+                                            contactName={contact.name}
+                                            size="sm"
+                                        />
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
@@ -270,12 +270,12 @@ export const ContactsList: React.FC<ContactsListProps> = ({
                                                     updateContact(contact.id, { status: nextStatus });
                                                 }}
                                                 aria-label={`Alterar status de ${contact.name} de ${contact.status === 'ACTIVE' ? 'ativo' : contact.status === 'INACTIVE' ? 'inativo' : 'perdido'}`}
-                                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ${contact.status === 'ACTIVE' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20' :
-                                                    contact.status === 'INACTIVE' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/20' :
-                                                        'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
-                                                    }`}
                                             >
-                                                {contact.status === 'ACTIVE' ? 'ATIVO' : contact.status === 'INACTIVE' ? 'INATIVO' : 'PERDIDO'}
+                                                <StatusBadge
+                                                    status={contact.status === 'ACTIVE' ? 'success' : contact.status === 'INACTIVE' ? 'warning' : 'danger'}
+                                                >
+                                                    {contact.status === 'ACTIVE' ? 'ATIVO' : contact.status === 'INACTIVE' ? 'INATIVO' : 'PERDIDO'}
+                                                </StatusBadge>
                                             </button>
                                             <button
                                                 onClick={() => convertContactToDeal(contact.id)}

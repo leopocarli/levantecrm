@@ -7,6 +7,7 @@ import { ActivitiesCalendar } from './components/ActivitiesCalendar';
 import { ActivityFormModal } from './components/ActivityFormModal';
 import { BulkActionsToolbar } from './components/BulkActionsToolbar';
 import { useToast } from '@/context/ToastContext';
+import { useUpdateActivity } from '@/lib/query/hooks/useActivitiesQuery';
 
 /**
  * Componente React `ActivitiesPage`.
@@ -40,6 +41,7 @@ export const ActivitiesPage: React.FC = () => {
     } = useActivitiesController();
 
     const { addToast } = useToast();
+    const updateActivityMutation = useUpdateActivity();
     const [selectedActivities, setSelectedActivities] = useState<Set<string>>(new Set());
 
     const handleSelectActivity = (id: string, selected: boolean) => {
@@ -67,7 +69,14 @@ export const ActivitiesPage: React.FC = () => {
     };
 
     const handleSnoozeAll = () => {
-        // In a real app, this would update the date of each activity
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        const newDate = tomorrow.toISOString();
+
+        selectedActivities.forEach(id => {
+            updateActivityMutation.mutate({ id, updates: { date: newDate } });
+        });
         addToast(`${selectedActivities.size} atividades adiadas para amanhã!`, 'success');
         handleClearSelection();
     };
@@ -107,6 +116,12 @@ export const ActivitiesPage: React.FC = () => {
                     deals={deals}
                     currentDate={currentDate}
                     setCurrentDate={setCurrentDate}
+                    onReschedule={(activityId, newDate) => {
+                        updateActivityMutation.mutate(
+                            { id: activityId, updates: { date: newDate } },
+                            { onSuccess: () => addToast('Atividade reagendada!', 'success') }
+                        );
+                    }}
                 />
             )}
 

@@ -112,7 +112,7 @@ const NavItem = ({
       onClick={() => onItemClick?.(to)}
       className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium focus-visible-ring
     ${isActuallyActive
-          ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-900/50'
+          ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border-l-[3px] border-primary-500'
           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
         }`}
     >
@@ -233,17 +233,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Sidebar - Collapsible */}
       {isDesktop ? (
       <aside
-        className={`hidden md:flex flex-col z-20 glass border-r border-[var(--color-border-subtle)] transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-20 items-center' : 'w-64'
+        className={`hidden md:flex flex-col z-20 bg-white dark:bg-[#0D1B2A] border-r border-[var(--color-border-subtle)] transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-20 items-center' : 'w-64'
           }`}
         aria-label="Menu principal"
       >
         <div className={`h-16 flex items-center border-b border-[var(--color-border-subtle)] transition-all duration-300 px-5 ${sidebarCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
-          <div className={`flex items-center transition-all duration-300 ${sidebarCollapsed ? 'gap-0 justify-center' : 'gap-3'}`}>
-            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-500/20 shrink-0" aria-hidden="true">
-              L
-            </div>
-            <span className={`text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white whitespace-nowrap overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-              Levante CRM
+          <div className={`flex items-center transition-all duration-300 ${sidebarCollapsed ? 'gap-0 justify-center' : 'gap-2.5'}`}>
+            {/* Levante Symbol — 3 ascending bars */}
+            <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0" aria-hidden="true">
+              <rect x="10" y="60" width="20" height="30" rx="4" fill="#F5650A" opacity=".38" />
+              <rect x="40" y="35" width="20" height="55" rx="4" fill="#F5650A" opacity=".68" />
+              <rect x="70" y="10" width="20" height="80" rx="4" fill="#F5650A" />
+            </svg>
+            <span className={`text-lg font-bold font-display tracking-wider uppercase text-slate-900 dark:text-white whitespace-nowrap overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+              Levante
             </span>
           </div>
 
@@ -283,7 +286,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     const anotherItemWasClicked = clickedPath && clickedPath !== item.to;
                     const isActuallyActive = anotherItemWasClicked ? false : (isActive || wasJustClicked);
                     return `w-10 h-10 rounded-lg flex items-center justify-center ${isActuallyActive
-                      ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-900/50'
+                      ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border-l-[3px] border-primary-500'
                       : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                       }`;
                   })()}
@@ -378,13 +381,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   aria-hidden="true"
                 />
                 <div
-                  className={`absolute bottom-full mb-2 z-50 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150 ${sidebarCollapsed ? 'left-0 w-48' : 'left-0 right-0'}`}
+                  className={`absolute bottom-full mb-2 z-50 bg-white dark:bg-[#142236] rounded-xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150 ${sidebarCollapsed ? 'left-0 w-48' : 'left-0 right-0'}`}
                 >
                   <div className="p-1">
                     <Link
                       href="/profile"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors focus-visible-ring"
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors focus-visible-ring"
                     >
                       <User className="w-4 h-4 text-slate-400" />
                       Editar Perfil
@@ -414,8 +417,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
           {/* Ambient background glow */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none" aria-hidden="true">
-            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-primary-500/10 rounded-full blur-[100px]"></div>
-            <div className="absolute top-[40%] right-[0%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[100px]"></div>
+            <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-primary-500/5 rounded-full blur-[100px]"></div>
+            <div className="absolute top-[40%] right-[0%] w-[40%] h-[40%] bg-primary-400/5 rounded-full blur-[100px]"></div>
           </div>
 
           {/* Header */}

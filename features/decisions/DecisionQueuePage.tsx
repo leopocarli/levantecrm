@@ -123,7 +123,7 @@ export const DecisionQueuePage: React.FC = () => {
             <Inbox size={16} />
             <span className="text-xs font-medium">Total</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
             {stats.total}
           </div>
         </div>
@@ -133,7 +133,7 @@ export const DecisionQueuePage: React.FC = () => {
             <AlertTriangle size={16} />
             <span className="text-xs font-medium">Crítico</span>
           </div>
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+          <div className="text-2xl font-bold font-mono text-red-600 dark:text-red-400">
             {stats.critical}
           </div>
         </div>
@@ -143,7 +143,7 @@ export const DecisionQueuePage: React.FC = () => {
             <TrendingUp size={16} />
             <span className="text-xs font-medium">Importante</span>
           </div>
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+          <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400">
             {stats.high}
           </div>
         </div>
@@ -153,7 +153,7 @@ export const DecisionQueuePage: React.FC = () => {
             <Clock size={16} />
             <span className="text-xs font-medium">Moderado</span>
           </div>
-          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+          <div className="text-2xl font-bold font-mono text-yellow-600 dark:text-yellow-400">
             {stats.medium}
           </div>
         </div>
@@ -163,7 +163,7 @@ export const DecisionQueuePage: React.FC = () => {
             <CheckCircle2 size={16} />
             <span className="text-xs font-medium">Baixo</span>
           </div>
-          <div className="text-2xl font-bold text-slate-600 dark:text-slate-400">
+          <div className="text-2xl font-bold font-mono text-slate-600 dark:text-slate-400">
             {stats.low}
           </div>
         </div>

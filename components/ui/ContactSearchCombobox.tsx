@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Search, User, Plus, Building2 } from 'lucide-react';
 import { useContacts, useCompanies } from '@/lib/query/hooks';
+import { stripAccents } from '@/lib/utils';
 import type { Contact, Company } from '@/types';
 
 interface ContactSearchComboboxProps {
@@ -44,12 +45,12 @@ export const ContactSearchCombobox: React.FC<ContactSearchComboboxProps> = ({
   const filteredContacts = useMemo(() => {
     if (!searchTerm.trim()) return [];
     
-    const term = searchTerm.toLowerCase().trim();
+    const term = stripAccents(searchTerm.toLowerCase().trim());
     
     return contacts
       .filter(contact => {
-        const nameMatch = contact.name?.toLowerCase().includes(term);
-        const emailMatch = contact.email?.toLowerCase().includes(term);
+        const nameMatch = stripAccents(contact.name?.toLowerCase() || '').includes(term);
+        const emailMatch = stripAccents(contact.email?.toLowerCase() || '').includes(term);
         const phoneMatch = contact.phone?.replace(/\D/g, '').includes(term.replace(/\D/g, ''));
         return nameMatch || emailMatch || phoneMatch;
       })
